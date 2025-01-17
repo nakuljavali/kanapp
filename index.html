@@ -4,15 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Learn Kannada Script</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+    
+    <!-- Existing links -->
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Add Noto Sans Kannada font -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <div class="menu-overlay" id="menuOverlay"></div>
+    
     <div class="container">
         <div class="top-bar">
-            <h1>Learn Kannada Script</h1>
-            <button class="practice-button" onclick="window.location.href='letters.html'">
-                Practice Mode
+            <button class="icon-button menu-button" id="menuButton">
+                <span class="material-icons">menu</span>
             </button>
+            <div class="logo">
+                <img src="assets/logo.svg" alt="KanApp" class="logo-image">
+            </div>
+            
+            <!-- Side Menu -->
+            <div class="side-menu" id="sideMenu">
+                <div class="menu-header">
+                    <div class="logo">
+                        <img src="assets/logo.svg" alt="KanApp" class="logo-image">
+                    </div>
+                    <button class="icon-button" id="closeMenu">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
+                <div class="menu-items">
+                    <a href="letters.html" class="menu-item">
+                        <span class="material-icons">edit</span>
+                        Practice Mode
+                    </a>
+                    <a href="settings.html" class="menu-item">
+                        <span class="material-icons">settings</span>
+                        Settings
+                    </a>
+                </div>
+            </div>
         </div>
 
         <div class="mode-selection">
@@ -58,6 +94,28 @@
     </div>
     <script src="letters.js"></script>
     <script>
+        // Menu functionality
+        const menuButton = document.getElementById('menuButton');
+        const closeMenu = document.getElementById('closeMenu');
+        const sideMenu = document.getElementById('sideMenu');
+        const menuOverlay = document.getElementById('menuOverlay');
+
+        function openMenu() {
+            sideMenu.classList.add('open');
+            menuOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMenuHandler() {
+            sideMenu.classList.remove('open');
+            menuOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        menuButton.addEventListener('click', openMenu);
+        closeMenu.addEventListener('click', closeMenuHandler);
+        menuOverlay.addEventListener('click', closeMenuHandler);
+
         // Learning progress tracking
         const learntLetters = JSON.parse(localStorage.getItem('learntLetters') || '[]');
         const vowels = kannadaLetters.vowels.map(v => v.letter);

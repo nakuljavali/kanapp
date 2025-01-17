@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Learn Kannada Script</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+    
+    <!-- Existing links -->
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="top-bar">
+            <button class="icon-button" onclick="window.location.href='index.html'">
+                <span class="material-icons">arrow_back</span>
+            </button>
+            <h1>Settings</h1>
+        </div>
+
+        <div class="settings-container">
+            <div class="settings-section">
+                <h2>Learning Progress</h2>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h3>Clear All Progress</h3>
+                        <p>This will reset all your learning progress</p>
+                    </div>
+                    <button class="danger-button" onclick="clearProgress()">Clear Progress</button>
+                </div>
+                <div class="setting-info progress-stats">
+                    <p>Vowels learned: <span id="vowelsCount">0/13</span></p>
+                    <p>Consonants learned: <span id="consonantsCount">0/34</span></p>
+                    <p>Numbers learned: <span id="numbersCount">0/10</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="letters.js"></script>
+    <script>
+        // Update progress statistics
+        function updateProgressStats() {
+            const learntLetters = JSON.parse(localStorage.getItem('learntLetters') || '[]');
+            const vowels = kannadaLetters.vowels.map(v => v.letter);
+            const consonants = kannadaLetters.consonants.map(c => c.letter);
+            const numbers = kannadaLetters.numbers.map(n => n.letter);
+            
+            const vowelsLearned = learntLetters.filter(l => vowels.includes(l)).length;
+            const consonantsLearned = learntLetters.filter(l => consonants.includes(l)).length;
+            const numbersLearned = learntLetters.filter(l => numbers.includes(l)).length;
+            
+            document.getElementById('vowelsCount').textContent = `${vowelsLearned}/${vowels.length}`;
+            document.getElementById('consonantsCount').textContent = `${consonantsLearned}/${consonants.length}`;
+            document.getElementById('numbersCount').textContent = `${numbersLearned}/${numbers.length}`;
+        }
+
+        function clearProgress() {
+            if (confirm('Are you sure you want to clear all progress? This cannot be undone.')) {
+                localStorage.removeItem('learntLetters');
+                localStorage.removeItem('lastPracticeDates');
+                localStorage.removeItem('currentLevel');
+                updateProgressStats();
+            }
+        }
+
+        // Initialize stats
+        updateProgressStats();
+    </script>
+</body>
+</html> 

@@ -369,15 +369,17 @@ body.drawing {
 
 .top-bar {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     padding: 20px;
     margin-bottom: 40px;
     border-bottom: 1px solid #eee;
+    position: relative;
 }
 
 .top-bar h1 {
     margin: 0;
+    text-align: center;
 }
 
 .practice-button {
@@ -405,17 +407,291 @@ body.drawing {
 /* Mobile Responsive */
 @media (max-width: 600px) {
     .top-bar {
-        flex-direction: column;
-        gap: 15px;
-        text-align: center;
-        padding: 15px;
+        padding: 15px 20px;
     }
     
     .top-bar h1 {
-        font-size: 24px;
+        font-size: 20px;
     }
     
-    .practice-button {
-        width: auto;
+    .menu-button {
+        left: 15px;
+    }
+    
+    .side-menu {
+        width: 280px;
+    }
+}
+
+/* Top bar modifications */
+.top-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.icon-button {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+}
+
+.icon-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.icon-button .material-icons {
+    color: #666;
+    font-size: 24px;
+}
+
+/* Settings Page Styles */
+.settings-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.settings-section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.settings-section h2 {
+    color: #F26B4D;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.setting-info h3 {
+    margin: 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.setting-info p {
+    margin: 5px 0 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.danger-button {
+    background: #ff4444;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.danger-button:hover {
+    background: #ff0000;
+}
+
+.progress-stats {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.progress-stats p {
+    margin: 10px 0;
+    color: #333;
+    font-size: 14px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .danger-button {
+        width: 100%;
+        padding: 12px;
+    }
+}
+
+/* Menu Overlay */
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.menu-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Side Menu */
+.side-menu {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 300px;
+    height: 100%;
+    background-color: white;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    transition: left 0.3s ease;
+    z-index: 1000;
+}
+
+.side-menu.open {
+    left: 0;
+}
+
+.menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.menu-header h2 {
+    margin: 0;
+    color: #F26B4D;
+    font-size: 20px;
+}
+
+.menu-items {
+    padding: 20px 0;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    color: #333;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    gap: 15px;
+}
+
+.menu-item:hover {
+    background-color: #f5f5f5;
+}
+
+.menu-item .material-icons {
+    color: #666;
+}
+
+/* Top Bar modifications */
+.top-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    margin-bottom: 40px;
+    border-bottom: 1px solid #eee;
+    position: relative;
+}
+
+.menu-button {
+    position: absolute;
+    left: 20px;
+    z-index: 1001;
+}
+
+.top-bar h1 {
+    margin: 0;
+    text-align: center;
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+    .side-menu {
+        width: 280px;
+    }
+    
+    .menu-header {
+        padding: 15px;
+    }
+    
+    .menu-item {
+        padding: 12px 15px;
+    }
+}
+
+/* Remove old practice button styles */
+.practice-button {
+    display: none;
+}
+
+/* Settings page specific */
+.settings-back-button {
+    position: absolute;
+    left: 20px;
+}
+
+/* Logo styles */
+.logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.logo-image {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* Menu header with logo */
+.menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.menu-header .logo-image {
+    height: 30px;
+}
+
+/* Ensure SVG text renders properly */
+.logo svg text {
+    font-family: 'Noto Sans Kannada', Arial, sans-serif;
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+    .logo-image {
+        height: 32px;
+    }
+    
+    .menu-header .logo-image {
+        height: 24px;
     }
 }
