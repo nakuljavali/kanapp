@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn Kannada Script</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="top-bar">
+            <h1>Learn Kannada Script</h1>
+            <button class="practice-button" onclick="window.location.href='letters.html'">
+                Practice Mode
+            </button>
+        </div>
+
+        <div class="mode-selection">
+            <div class="learning-tree">
+                <!-- Level 1: Vowels -->
+                <div class="level-container">
+                    <h2>Level 1: Vowels</h2>
+                    <div class="progress-bar">
+                        <div class="progress" id="vowelsProgress"></div>
+                    </div>
+                    <button class="level-button" onclick="startLevel('vowels')" id="vowelsButton">
+                        Start Vowels
+                    </button>
+                </div>
+                
+                <div class="level-connector"></div>
+                
+                <!-- Level 2: Consonants -->
+                <div class="level-container locked" id="consonantsContainer">
+                    <h2>Level 2: Consonants</h2>
+                    <div class="progress-bar">
+                        <div class="progress" id="consonantsProgress"></div>
+                    </div>
+                    <button class="level-button" onclick="startLevel('consonants')" id="consonantsButton" disabled>
+                        Locked
+                    </button>
+                </div>
+                
+                <div class="level-connector"></div>
+                
+                <!-- Level 3: Numbers -->
+                <div class="level-container locked" id="numbersContainer">
+                    <h2>Level 3: Numbers</h2>
+                    <div class="progress-bar">
+                        <div class="progress" id="numbersProgress"></div>
+                    </div>
+                    <button class="level-button" onclick="startLevel('numbers')" id="numbersButton" disabled>
+                        Locked
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="letters.js"></script>
+    <script>
+        // Learning progress tracking
+        const learntLetters = JSON.parse(localStorage.getItem('learntLetters') || '[]');
+        const vowels = kannadaLetters.vowels.map(v => v.letter);
+        const consonants = kannadaLetters.consonants.map(c => c.letter);
+        const numbers = kannadaLetters.numbers.map(n => n.letter);
+        
+        // Calculate progress for each level
+        const vowelsLearned = learntLetters.filter(l => vowels.includes(l)).length;
+        const consonantsLearned = learntLetters.filter(l => consonants.includes(l)).length;
+        const numbersLearned = learntLetters.filter(l => numbers.includes(l)).length;
+        
+        // Update progress bars
+        const vowelsProgress = document.getElementById('vowelsProgress');
+        vowelsProgress.style.width = `${(vowelsLearned / vowels.length) * 100}%`;
+        
+        const consonantsProgress = document.getElementById('consonantsProgress');
+        consonantsProgress.style.width = `${(consonantsLearned / consonants.length) * 100}%`;
+        
+        const numbersProgress = document.getElementById('numbersProgress');
+        numbersProgress.style.width = `${(numbersLearned / numbers.length) * 100}%`;
+        
+        // Check level unlocks
+        const consonantsContainer = document.getElementById('consonantsContainer');
+        const consonantsButton = document.getElementById('consonantsButton');
+        const numbersContainer = document.getElementById('numbersContainer');
+        const numbersButton = document.getElementById('numbersButton');
+        
+        // Unlock consonants if vowels are completed
+        if (vowelsLearned === vowels.length) {
+            consonantsContainer.classList.remove('locked');
+            consonantsButton.disabled = false;
+            consonantsButton.textContent = 'Start Consonants';
+        }
+        
+        // Unlock numbers if consonants are completed
+        if (consonantsLearned === consonants.length) {
+            numbersContainer.classList.remove('locked');
+            numbersButton.disabled = false;
+            numbersButton.textContent = 'Start Numbers';
+        }
+        
+        function startLevel(level) {
+            localStorage.setItem('currentLevel', level);
+            window.location.href = 'practice.html?mode=learn';
+        }
+    </script>
+</body>
+</html>

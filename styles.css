@@ -1,0 +1,421 @@
+/* Base styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+}
+
+h1 {
+    color: #F26B4D;
+    margin-bottom: 40px;
+}
+
+/* Mode Selection Cards */
+.mode-selection {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 40px;
+    padding: 0 20px;
+}
+
+.mode-card {
+    background: white;
+    border: 2px solid #F26B4D;
+    border-radius: 8px;
+    padding: 30px;
+    width: 250px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mode-card:hover {
+    background: #FFF1EC;
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(242, 107, 77, 0.2);
+}
+
+.mode-card h2 {
+    color: #F26B4D;
+    margin: 0 0 15px 0;
+}
+
+.mode-card p {
+    color: #666;
+    margin: 0 0 15px 0;
+}
+
+.progress-info {
+    margin-top: 15px;
+    font-weight: bold;
+    color: #F26B4D;
+}
+
+/* Canvas and Drawing Area */
+.canvas-container {
+    width: 100%;
+    max-width: 500px;
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+#drawingCanvas {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    border: 2px solid #F26B4D;
+    background: white;
+    border-radius: 8px;
+    touch-action: none; /* Prevents default touch actions like scrolling */
+}
+
+/* Buttons */
+button {
+    min-width: 100px;
+    padding: 12px 25px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+#submitDrawing {
+    background-color: #F26B4D;
+    color: white;
+}
+
+#clearCanvas {
+    background-color: #F4B95A;
+    color: white;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+/* Letter Display */
+.letter-display {
+    margin: 20px 0;
+}
+
+#targetLetter {
+    margin: 20px auto;
+    max-width: 100%;
+    padding: 0 20px;
+}
+
+#targetLetter .letter {
+    font-size: clamp(48px, 15vw, 72px);
+    color: #F26B4D;
+}
+
+#targetLetter .transliteration {
+    font-size: clamp(18px, 5vw, 24px);
+    color: #666;
+    margin-top: 10px;
+}
+
+#targetLetter .example {
+    font-size: clamp(24px, 7vw, 28px);
+    color: #333;
+    margin-top: 15px;
+}
+
+#targetLetter .example-transliteration {
+    font-size: clamp(14px, 4vw, 18px);
+    color: #666;
+    font-style: italic;
+}
+
+/* Result Messages */
+#result {
+    margin: 20px auto;
+    font-size: clamp(16px, 4vw, 18px);
+    font-weight: bold;
+    min-height: 27px;
+    padding: 0 20px;
+}
+
+/* Navigation */
+.nav-button {
+    margin: 20px auto;
+    display: inline-block;
+    padding: 12px 25px;
+    font-size: clamp(14px, 4vw, 16px);
+}
+
+.nav-button:hover {
+    background-color: #e55d3f;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .mode-selection {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .mode-card {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+.letters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+    padding: 20px;
+}
+
+.letter-card {
+    background: white;
+    border: 2px solid #F26B4D;
+    border-radius: 8px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+}
+
+.letter-card:hover {
+    background: #FFF1EC;
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(242, 107, 77, 0.2);
+}
+
+.letter-card .letter {
+    font-size: 48px;
+    color: #F26B4D;
+    margin-bottom: 10px;
+}
+
+.letter-card .transliteration {
+    font-size: 18px;
+    color: #666;
+    font-style: italic;
+}
+
+.category-header {
+    color: #F26B4D;
+    margin: 40px 0 20px 0;
+    text-align: left;
+    padding-left: 20px;
+    border-bottom: 2px solid #F26B4D;
+    padding-bottom: 10px;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+    padding: 0 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .container {
+        padding: 10px;
+    }
+    
+    h1 {
+        font-size: 24px;
+        margin: 15px 0;
+    }
+    
+    h2 {
+        font-size: 20px;
+        margin: 10px 0;
+    }
+    
+    .button-container {
+        flex-direction: row;
+        padding: 0 10px;
+    }
+    
+    button {
+        flex: 1;
+        min-width: 0;
+        padding: 12px 15px;
+    }
+}
+
+/* Prevent scrolling while drawing */
+body.drawing {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+/* Learning Tree Styles */
+.learning-tree {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    margin: 40px 0;
+    padding: 20px;
+}
+
+.level-container {
+    background: white;
+    border: 2px solid #F26B4D;
+    border-radius: 12px;
+    padding: 20px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.level-container.locked {
+    opacity: 0.7;
+    border-color: #ccc;
+}
+
+.level-connector {
+    width: 4px;
+    height: 40px;
+    background: #F26B4D;
+}
+
+.progress-bar {
+    background: #f0f0f0;
+    height: 10px;
+    border-radius: 5px;
+    margin: 15px 0;
+    overflow: hidden;
+}
+
+.progress {
+    background: #F26B4D;
+    height: 100%;
+    width: 0;
+    transition: width 0.3s ease;
+}
+
+.level-button {
+    background: #F26B4D;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.level-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.level-button:hover:not(:disabled) {
+    background: #e55d3f;
+}
+
+.practice-section {
+    margin-top: 40px;
+    padding: 20px;
+    border-top: 2px solid #eee;
+    text-align: center;
+}
+
+.practice-button {
+    background: #F4B95A;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.practice-button:hover {
+    background: #e5aa4b;
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+    .level-container {
+        padding: 15px;
+    }
+    
+    .level-button, .practice-button {
+        width: 100%;
+        padding: 15px;
+    }
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    margin-bottom: 40px;
+    border-bottom: 1px solid #eee;
+}
+
+.top-bar h1 {
+    margin: 0;
+}
+
+.practice-button {
+    background: #F4B95A;
+    color: white;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.practice-button:hover {
+    background: #e5aa4b;
+    transform: translateY(-2px);
+}
+
+/* Remove old practice section styles */
+.practice-section {
+    display: none;
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+    .top-bar {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        padding: 15px;
+    }
+    
+    .top-bar h1 {
+        font-size: 24px;
+    }
+    
+    .practice-button {
+        width: auto;
+    }
+}

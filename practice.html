@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Learn Kannada Script - Practice</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Learn Kannada Script</h1>
+        <div class="mode-indicator" id="modeIndicator"></div>
+        <div class="letter-display">
+            <h2>Draw this letter:</h2>
+            <div id="targetLetter"></div>
+        </div>
+        <div class="canvas-container">
+            <canvas id="drawingCanvas" width="300" height="300"></canvas>
+            <div class="button-container">
+                <button id="clearCanvas">Clear</button>
+                <button id="submitDrawing">Submit</button>
+            </div>
+        </div>
+        <div id="result"></div>
+        <a href="index.html" class="nav-button">Back to Home</a>
+    </div>
+    <script src="letters.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
