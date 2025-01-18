@@ -2,18 +2,62 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Learn Kannada Script - Practice</title>
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
+    <div class="menu-overlay" id="menuOverlay"></div>
+    
     <div class="container">
-        <h1>Learn Kannada Script</h1>
-        <div class="mode-indicator" id="modeIndicator"></div>
+        <div class="top-bar">
+            <button class="icon-button menu-button" id="menuButton">
+                <span class="material-icons">menu</span>
+            </button>
+            <a href="index.html" class="logo">
+                <img src="assets/logo.svg" alt="KanApp" class="logo-image">
+            </a>
+        </div>
+
+        <div class="side-menu" id="sideMenu">
+            <div class="menu-header">
+                <a href="index.html" class="logo">
+                    <img src="assets/logo.svg" alt="KanApp" class="logo-image">
+                </a>
+                <button class="icon-button" id="closeMenu">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <nav class="menu-items">
+                <a href="index.html">
+                    <span class="material-icons">home</span>
+                    Home
+                </a>
+                <a href="practice.html?mode=learn&level=vowels">
+                    <span class="material-icons">edit</span>
+                    Write Practice
+                </a>
+                <a href="read.html?level=vowels">
+                    <span class="material-icons">visibility</span>
+                    Read Practice
+                </a>
+                <a href="settings.html">
+                    <span class="material-icons">settings</span>
+                    Settings
+                </a>
+            </nav>
+        </div>
+
+        <!-- Rest of the page content -->
         <div class="letter-display">
             <h2>Draw this letter:</h2>
             <div id="targetLetter"></div>
         </div>
+
         <div class="canvas-container">
             <canvas id="drawingCanvas" width="300" height="300"></canvas>
             <div class="button-container">
@@ -22,9 +66,10 @@
             </div>
         </div>
         <div id="result"></div>
-        <a href="index.html" class="nav-button">Back to Home</a>
     </div>
+
     <script src="letters.js"></script>
+    <script src="menu.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

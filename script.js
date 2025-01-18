@@ -354,5 +354,13 @@ function calculateSimilarity(imageData) {
     return Math.min(Math.max(coverage * 5, 0), 100);
 }
 
+// Initialize menu when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded');
+    initializeMenu();
+    
+    // ... rest of your existing initialization code ...
+});
+
 // Start the app
 init(); 

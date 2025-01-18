@@ -4,17 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Learn Kannada Script</title>
-    
-    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
     <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-    
-    <!-- Existing links -->
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <!-- Add Noto Sans Kannada font -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="menu-overlay" id="menuOverlay"></div>
@@ -24,143 +18,156 @@
             <button class="icon-button menu-button" id="menuButton">
                 <span class="material-icons">menu</span>
             </button>
-            <div class="logo">
+            <a href="index.html" class="logo">
                 <img src="assets/logo.svg" alt="KanApp" class="logo-image">
-            </div>
-            
-            <!-- Side Menu -->
-            <div class="side-menu" id="sideMenu">
-                <div class="menu-header">
-                    <div class="logo">
-                        <img src="assets/logo.svg" alt="KanApp" class="logo-image">
-                    </div>
-                    <button class="icon-button" id="closeMenu">
-                        <span class="material-icons">close</span>
-                    </button>
-                </div>
-                <div class="menu-items">
-                    <a href="letters.html" class="menu-item">
-                        <span class="material-icons">edit</span>
-                        Practice Mode
-                    </a>
-                    <a href="settings.html" class="menu-item">
-                        <span class="material-icons">settings</span>
-                        Settings
-                    </a>
-                </div>
-            </div>
+            </a>
         </div>
 
+        <div class="side-menu" id="sideMenu">
+            <div class="menu-header">
+                <a href="index.html" class="logo">
+                    <img src="assets/logo.svg" alt="KanApp" class="logo-image">
+                </a>
+                <button class="icon-button" id="closeMenu">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <nav class="menu-items">
+                <a href="index.html">
+                    <span class="material-icons">home</span>
+                    Home
+                </a>
+                <a href="practice.html?mode=learn&level=vowels">
+                    <span class="material-icons">edit</span>
+                    Write Practice
+                </a>
+                <a href="read.html?level=vowels">
+                    <span class="material-icons">visibility</span>
+                    Read Practice
+                </a>
+                <a href="settings.html">
+                    <span class="material-icons">settings</span>
+                    Settings
+                </a>
+            </nav>
+        </div>
+
+        <!-- Rest of index page content -->
         <div class="mode-selection">
             <div class="learning-tree">
-                <!-- Level 1: Vowels -->
-                <div class="level-container">
-                    <h2>Level 1: Vowels</h2>
-                    <div class="progress-bar">
-                        <div class="progress" id="vowelsProgress"></div>
+                <!-- Level 1: Write Vowels -->
+                <div class="level">
+                    <div class="level-header">
+                        <span class="level-number">Level 1</span>
+                        <span class="level-type">
+                            <span class="material-icons">edit</span>
+                            Write
+                        </span>
                     </div>
-                    <button class="level-button" onclick="startLevel('vowels')" id="vowelsButton">
-                        Start Vowels
-                    </button>
+                    <h2>Vowels</h2>
+                    <a href="practice.html?mode=learn&level=vowels" class="start-button">
+                        Start Practice
+                    </a>
+                    <div class="progress-bar">
+                        <div class="progress" id="writeVowelsProgress"></div>
+                    </div>
                 </div>
-                
-                <div class="level-connector"></div>
-                
-                <!-- Level 2: Consonants -->
-                <div class="level-container locked" id="consonantsContainer">
-                    <h2>Level 2: Consonants</h2>
-                    <div class="progress-bar">
-                        <div class="progress" id="consonantsProgress"></div>
+
+                <!-- Level 2: Read Vowels -->
+                <div class="level">
+                    <div class="level-header">
+                        <span class="level-number">Level 2</span>
+                        <span class="level-type">
+                            <span class="material-icons">visibility</span>
+                            Read
+                        </span>
                     </div>
-                    <button class="level-button" onclick="startLevel('consonants')" id="consonantsButton" disabled>
-                        Locked
-                    </button>
+                    <h2>Vowels</h2>
+                    <a href="read.html?level=vowels" class="start-button">
+                        Start Practice
+                    </a>
+                    <div class="progress-bar">
+                        <div class="progress" id="readVowelsProgress"></div>
+                    </div>
                 </div>
-                
-                <div class="level-connector"></div>
-                
-                <!-- Level 3: Numbers -->
-                <div class="level-container locked" id="numbersContainer">
-                    <h2>Level 3: Numbers</h2>
-                    <div class="progress-bar">
-                        <div class="progress" id="numbersProgress"></div>
+
+                <!-- Level 3: Write Consonants -->
+                <div class="level">
+                    <div class="level-header">
+                        <span class="level-number">Level 3</span>
+                        <span class="level-type">
+                            <span class="material-icons">edit</span>
+                            Write
+                        </span>
                     </div>
-                    <button class="level-button" onclick="startLevel('numbers')" id="numbersButton" disabled>
-                        Locked
-                    </button>
+                    <h2>Consonants</h2>
+                    <a href="practice.html?mode=learn&level=consonants" class="start-button">
+                        Start Practice
+                    </a>
+                    <div class="progress-bar">
+                        <div class="progress" id="writeConsonantsProgress"></div>
+                    </div>
+                </div>
+
+                <!-- Level 4: Read Consonants -->
+                <div class="level">
+                    <div class="level-header">
+                        <span class="level-number">Level 4</span>
+                        <span class="level-type">
+                            <span class="material-icons">visibility</span>
+                            Read
+                        </span>
+                    </div>
+                    <h2>Consonants</h2>
+                    <a href="read.html?level=consonants" class="start-button">
+                        Start Practice
+                    </a>
+                    <div class="progress-bar">
+                        <div class="progress" id="readConsonantsProgress"></div>
+                    </div>
+                </div>
+
+                <!-- Level 5: Write Numbers -->
+                <div class="level">
+                    <div class="level-header">
+                        <span class="level-number">Level 5</span>
+                        <span class="level-type">
+                            <span class="material-icons">edit</span>
+                            Write
+                        </span>
+                    </div>
+                    <h2>Numbers</h2>
+                    <a href="practice.html?mode=learn&level=numbers" class="start-button">
+                        Start Practice
+                    </a>
+                    <div class="progress-bar">
+                        <div class="progress" id="writeNumbersProgress"></div>
+                    </div>
+                </div>
+
+                <!-- Level 6: Read Numbers -->
+                <div class="level">
+                    <div class="level-header">
+                        <span class="level-number">Level 6</span>
+                        <span class="level-type">
+                            <span class="material-icons">visibility</span>
+                            Read
+                        </span>
+                    </div>
+                    <h2>Numbers</h2>
+                    <a href="read.html?level=numbers" class="start-button">
+                        Start Practice
+                    </a>
+                    <div class="progress-bar">
+                        <div class="progress" id="readNumbersProgress"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
     <script src="letters.js"></script>
-    <script>
-        // Menu functionality
-        const menuButton = document.getElementById('menuButton');
-        const closeMenu = document.getElementById('closeMenu');
-        const sideMenu = document.getElementById('sideMenu');
-        const menuOverlay = document.getElementById('menuOverlay');
-
-        function openMenu() {
-            sideMenu.classList.add('open');
-            menuOverlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeMenuHandler() {
-            sideMenu.classList.remove('open');
-            menuOverlay.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        menuButton.addEventListener('click', openMenu);
-        closeMenu.addEventListener('click', closeMenuHandler);
-        menuOverlay.addEventListener('click', closeMenuHandler);
-
-        // Learning progress tracking
-        const learntLetters = JSON.parse(localStorage.getItem('learntLetters') || '[]');
-        const vowels = kannadaLetters.vowels.map(v => v.letter);
-        const consonants = kannadaLetters.consonants.map(c => c.letter);
-        const numbers = kannadaLetters.numbers.map(n => n.letter);
-        
-        // Calculate progress for each level
-        const vowelsLearned = learntLetters.filter(l => vowels.includes(l)).length;
-        const consonantsLearned = learntLetters.filter(l => consonants.includes(l)).length;
-        const numbersLearned = learntLetters.filter(l => numbers.includes(l)).length;
-        
-        // Update progress bars
-        const vowelsProgress = document.getElementById('vowelsProgress');
-        vowelsProgress.style.width = `${(vowelsLearned / vowels.length) * 100}%`;
-        
-        const consonantsProgress = document.getElementById('consonantsProgress');
-        consonantsProgress.style.width = `${(consonantsLearned / consonants.length) * 100}%`;
-        
-        const numbersProgress = document.getElementById('numbersProgress');
-        numbersProgress.style.width = `${(numbersLearned / numbers.length) * 100}%`;
-        
-        // Check level unlocks
-        const consonantsContainer = document.getElementById('consonantsContainer');
-        const consonantsButton = document.getElementById('consonantsButton');
-        const numbersContainer = document.getElementById('numbersContainer');
-        const numbersButton = document.getElementById('numbersButton');
-        
-        // Unlock consonants if vowels are completed
-        if (vowelsLearned === vowels.length) {
-            consonantsContainer.classList.remove('locked');
-            consonantsButton.disabled = false;
-            consonantsButton.textContent = 'Start Consonants';
-        }
-        
-        // Unlock numbers if consonants are completed
-        if (consonantsLearned === consonants.length) {
-            numbersContainer.classList.remove('locked');
-            numbersButton.disabled = false;
-            numbersButton.textContent = 'Start Numbers';
-        }
-        
-        function startLevel(level) {
-            localStorage.setItem('currentLevel', level);
-            window.location.href = 'practice.html?mode=learn';
-        }
-    </script>
+    <script src="menu.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
