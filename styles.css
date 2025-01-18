@@ -91,6 +91,9 @@ button {
     border: none;
     border-radius: 8px;
     transition: background-color 0.3s ease;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
 #submitDrawing {
@@ -454,10 +457,11 @@ body.drawing {
 }
 
 .top-bar {
-    position: relative;
+    position: sticky;
+    top: 0;
     display: flex;
     align-items: center;
-    padding: 10px 20px;
+    padding: 12px 16px;
     background: white;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     z-index: 997;
@@ -639,37 +643,59 @@ body.drawing {
     height: 100%;
     background: white;
     z-index: 999;
-    transition: left 0.3s ease;
+    transition: transform 0.3s ease;
     box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+    overflow-y: auto;
 }
 
 .side-menu.active {
-    left: 0;
+    transform: translateX(280px);
 }
 
 /* Top bar styles */
 .top-bar {
-    position: relative;
+    position: sticky;
+    top: 0;
     display: flex;
     align-items: center;
+    justify-content: center;
     padding: 12px 20px;
     background: white;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     z-index: 997;
+    min-height: 60px;
 }
 
+.logo {
+    margin: 0 auto;
+}
+
+/* Menu button styles */
 .menu-button {
-    position: absolute;
-    left: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: none;
     border: none;
     padding: 8px;
     cursor: pointer;
     color: #333;
+    min-width: 44px;
+    min-height: 44px;
+    position: absolute;
+    left: 12px;
+    z-index: 998;
+    transition: background-color 0.2s ease;
+}
+
+.menu-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 50%;
 }
 
 .menu-button .material-icons {
     font-size: 24px;
+    pointer-events: none; /* Prevent icon from interfering with clicks */
 }
 
 /* Menu header styles */
@@ -699,9 +725,6 @@ body.drawing {
     text-decoration: none;
     transition: background-color 0.2s ease;
     cursor: pointer;
-    font-size: 16px;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
 }
 
 .menu-items a:hover {
@@ -913,4 +936,50 @@ body.drawing {
 
 .secondary-button:hover {
     background: #eeeeee;
+}
+
+/* Mobile-friendly menu styles */
+@media (max-width: 768px) {
+    .side-menu {
+        width: 85%;
+        left: -85%;
+    }
+
+    .menu-button {
+        position: relative;
+        left: 0;
+    }
+
+    .top-bar {
+        padding: 8px 12px;
+    }
+
+    .logo-image {
+        height: 32px;
+    }
+
+    .menu-items a {
+        padding: 16px 20px;
+    }
+
+    .menu-header {
+        padding: 12px 16px;
+    }
+
+    /* Prevent body scroll when menu is open */
+    body.menu-open {
+        overflow: hidden;
+    }
+}
+
+/* Ensure menu items are easily tappable on mobile */
+.menu-items a {
+    min-height: 48px;
+    padding: 12px 20px;
+}
+
+/* Make the overlay more responsive */
+.menu-overlay {
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.3s ease;
 }

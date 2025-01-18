@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn Kannada Script - Reading Practice</title>
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <div class="menu-overlay" id="menuOverlay"></div>
+    
+    <div class="container">
+        <div class="top-bar">
+            <button class="icon-button menu-button" id="menuButton">
+                <span class="material-icons">menu</span>
+            </button>
+            <a href="index.html" class="logo">
+                <img src="assets/logo.svg" alt="KanApp" class="logo-image">
+            </a>
+        </div>
+
+        <div class="side-menu" id="sideMenu">
+            <div class="menu-header">
+                <a href="index.html" class="logo">
+                    <img src="assets/logo.svg" alt="KanApp" class="logo-image">
+                </a>
+                <button class="icon-button" id="closeMenu">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <nav class="menu-items">
+                <a href="index.html">
+                    <span class="material-icons">home</span>
+                    Home
+                </a>
+                <a href="practice.html?mode=learn&level=vowels">
+                    <span class="material-icons">edit</span>
+                    Write Practice
+                </a>
+                <a href="read.html?level=vowels">
+                    <span class="material-icons">visibility</span>
+                    Read Practice
+                </a>
+                <a href="settings.html">
+                    <span class="material-icons">settings</span>
+                    Settings
+                </a>
+            </nav>
+        </div>
+
+        <div class="read-practice">
+            <div class="letter-display">
+                <h2>Read this letter:</h2>
+                <div id="targetLetter" class="letter"></div>
+            </div>
+            
+            <div class="answer-section">
+                <input type="text" 
+                       id="answerInput" 
+                       placeholder="Type how to read this letter..." 
+                       autocomplete="off"
+                       autocapitalize="none">
+                <button id="submitAnswer" class="primary-button">
+                    <span class="material-icons">check</span>
+                    Check
+                </button>
+            </div>
+
+            <div id="feedback" class="feedback"></div>
+
+            <div class="button-container">
+                <button id="showHint" class="secondary-button">
+                    <span class="material-icons">lightbulb</span>
+                    Hint
+                </button>
+                <button id="nextLetter" class="primary-button" style="display: none;">
+                    <span class="material-icons">arrow_forward</span>
+                    Next
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="letters.js"></script>
+    <script src="menu.js"></script>
+    <script src="read.js"></script>
+</body>
+</html> 
+    <script src="read.js"></script>
+</body>
+</html>
