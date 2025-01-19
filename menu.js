@@ -6,58 +6,65 @@ document.addEventListener('DOMContentLoaded', () => {
     const sideMenu = document.getElementById('sideMenu');
     const menuOverlay = document.getElementById('menuOverlay');
 
+    console.log('Menu elements found:', {
+        menuButton: !!menuButton,
+        closeMenuButton: !!closeMenuButton,
+        sideMenu: !!sideMenu,
+        menuOverlay: !!menuOverlay
+    });
+
     function openMenu(e) {
-        console.log('Opening menu triggered');
+        console.log('Opening menu');
         if (e) {
             e.preventDefault();
             e.stopPropagation();
         }
-        sideMenu.classList.add('active');
-        menuOverlay.style.display = 'block';
-        document.body.style.overflow = 'hidden';
-        console.log('Menu should be open now');
+        
+        requestAnimationFrame(() => {
+            sideMenu.classList.add('active');
+            menuOverlay.classList.add('active');
+            menuOverlay.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        });
     }
 
     function handleCloseMenu(e) {
-        console.log('Closing menu triggered');
+        console.log('Closing menu');
         if (e) {
             e.preventDefault();
             e.stopPropagation();
         }
-        sideMenu.classList.remove('active');
-        menuOverlay.style.display = 'none';
-        document.body.style.overflow = '';
-        console.log('Menu should be closed now');
+        
+        requestAnimationFrame(() => {
+            sideMenu.classList.remove('active');
+            menuOverlay.classList.remove('active');
+            menuOverlay.style.display = 'none';
+            document.body.style.overflow = '';
+        });
     }
 
-    // Add both click and touch events for menu button
     if (menuButton) {
-        ['click', 'touchend'].forEach(eventType => {
-            menuButton.addEventListener(eventType, (e) => {
-                e.preventDefault();
-                openMenu(e);
-            }, { passive: false });
-        });
+        menuButton.addEventListener('click', openMenu);
+        menuButton.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            openMenu(e);
+        }, { passive: false });
     }
 
-    // Add both click and touch events for close button
     if (closeMenuButton) {
-        ['click', 'touchend'].forEach(eventType => {
-            closeMenuButton.addEventListener(eventType, (e) => {
-                e.preventDefault();
-                handleCloseMenu(e);
-            }, { passive: false });
-        });
+        closeMenuButton.addEventListener('click', handleCloseMenu);
+        closeMenuButton.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            handleCloseMenu(e);
+        }, { passive: false });
     }
 
-    // Add both click and touch events for overlay
     if (menuOverlay) {
-        ['click', 'touchend'].forEach(eventType => {
-            menuOverlay.addEventListener(eventType, (e) => {
-                e.preventDefault();
-                handleCloseMenu(e);
-            }, { passive: false });
-        });
+        menuOverlay.addEventListener('click', handleCloseMenu);
+        menuOverlay.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            handleCloseMenu(e);
+        }, { passive: false });
     }
 
     // ESC key to close menu

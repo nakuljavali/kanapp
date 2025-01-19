@@ -354,12 +354,40 @@ function calculateSimilarity(imageData) {
     return Math.min(Math.max(coverage * 5, 0), 100);
 }
 
-// Initialize menu when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded');
-    initializeMenu();
-    
-    // ... rest of your existing initialization code ...
+    // Only initialize if we're on the learning tree page
+    const learningTree = document.querySelector('.learning-tree');
+    if (!learningTree) {
+        console.log('Not on learning tree page');
+        return;
+    }
+
+    console.log('Initializing learning tree');
+
+    // Initialize progress bars
+    const levels = document.querySelectorAll('.level');
+    levels.forEach((level, index) => {
+        const progressBar = level.querySelector('.progress');
+        if (progressBar) {
+            progressBar.style.width = '0%';
+        }
+    });
+
+    // Load saved progress if any
+    try {
+        const savedProgress = localStorage.getItem('learningProgress');
+        if (savedProgress) {
+            const progress = JSON.parse(savedProgress);
+            levels.forEach((level, index) => {
+                const progressBar = level.querySelector('.progress');
+                if (progressBar && progress[index]) {
+                    progressBar.style.width = `${progress[index]}%`;
+                }
+            });
+        }
+    } catch (error) {
+        console.log('No saved progress found');
+    }
 });
 
 // Start the app

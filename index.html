@@ -11,11 +11,14 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
+    <!-- Menu Overlay -->
     <div class="menu-overlay" id="menuOverlay"></div>
     
+    <!-- Main Container -->
     <div class="container">
+        <!-- Top Bar -->
         <div class="top-bar">
-            <button class="icon-button menu-button" id="menuButton">
+            <button class="menu-button" id="menuButton">
                 <span class="material-icons">menu</span>
             </button>
             <a href="index.html" class="logo">
@@ -23,6 +26,7 @@
             </a>
         </div>
 
+        <!-- Side Menu -->
         <div class="side-menu" id="sideMenu">
             <div class="menu-header">
                 <a href="index.html" class="logo">
@@ -45,127 +49,62 @@
                     <span class="material-icons">visibility</span>
                     Read Practice
                 </a>
-                <a href="settings.html">
-                    <span class="material-icons">settings</span>
-                    Settings
-                </a>
             </nav>
         </div>
 
-        <!-- Rest of index page content -->
-        <div class="mode-selection">
-            <div class="learning-tree">
-                <!-- Level 1: Write Vowels -->
-                <div class="level">
-                    <div class="level-header">
-                        <span class="level-number">Level 1</span>
-                        <span class="level-type">
-                            <span class="material-icons">edit</span>
-                            Write
-                        </span>
-                    </div>
-                    <h2>Vowels</h2>
-                    <a href="practice.html?mode=learn&level=vowels" class="start-button">
-                        Start Practice
-                    </a>
-                    <div class="progress-bar">
-                        <div class="progress" id="writeVowelsProgress"></div>
-                    </div>
+        <!-- Learning Tree -->
+        <div class="learning-tree">
+            <!-- Level 1 -->
+            <div class="level">
+                <div class="level-header">
+                    <span class="level-number">Level 1</span>
+                    <span class="level-type">
+                        <span class="material-icons">edit</span>
+                        Write
+                    </span>
                 </div>
-
-                <!-- Level 2: Read Vowels -->
-                <div class="level">
-                    <div class="level-header">
-                        <span class="level-number">Level 2</span>
-                        <span class="level-type">
-                            <span class="material-icons">visibility</span>
-                            Read
-                        </span>
-                    </div>
-                    <h2>Vowels</h2>
-                    <a href="read.html?level=vowels" class="start-button">
-                        Start Practice
-                    </a>
-                    <div class="progress-bar">
-                        <div class="progress" id="readVowelsProgress"></div>
-                    </div>
+                <h2>Vowels</h2>
+                <a href="practice.html?mode=learn&level=vowels" class="start-button">Start Practice</a>
+                <div class="progress-bar">
+                    <div class="progress" style="width: 0%"></div>
                 </div>
+            </div>
 
-                <!-- Level 3: Write Consonants -->
-                <div class="level">
-                    <div class="level-header">
-                        <span class="level-number">Level 3</span>
-                        <span class="level-type">
-                            <span class="material-icons">edit</span>
-                            Write
-                        </span>
-                    </div>
-                    <h2>Consonants</h2>
-                    <a href="practice.html?mode=learn&level=consonants" class="start-button">
-                        Start Practice
-                    </a>
-                    <div class="progress-bar">
-                        <div class="progress" id="writeConsonantsProgress"></div>
-                    </div>
+            <!-- Level 2 -->
+            <div class="level">
+                <div class="level-header">
+                    <span class="level-number">Level 2</span>
+                    <span class="level-type">
+                        <span class="material-icons">visibility</span>
+                        Read
+                    </span>
                 </div>
-
-                <!-- Level 4: Read Consonants -->
-                <div class="level">
-                    <div class="level-header">
-                        <span class="level-number">Level 4</span>
-                        <span class="level-type">
-                            <span class="material-icons">visibility</span>
-                            Read
-                        </span>
-                    </div>
-                    <h2>Consonants</h2>
-                    <a href="read.html?level=consonants" class="start-button">
-                        Start Practice
-                    </a>
-                    <div class="progress-bar">
-                        <div class="progress" id="readConsonantsProgress"></div>
-                    </div>
+                <h2>Vowels</h2>
+                <a href="read.html?level=vowels" class="start-button">Start Practice</a>
+                <div class="progress-bar">
+                    <div class="progress" style="width: 0%"></div>
                 </div>
+            </div>
 
-                <!-- Level 5: Write Numbers -->
-                <div class="level">
-                    <div class="level-header">
-                        <span class="level-number">Level 5</span>
-                        <span class="level-type">
-                            <span class="material-icons">edit</span>
-                            Write
-                        </span>
-                    </div>
-                    <h2>Numbers</h2>
-                    <a href="practice.html?mode=learn&level=numbers" class="start-button">
-                        Start Practice
-                    </a>
-                    <div class="progress-bar">
-                        <div class="progress" id="writeNumbersProgress"></div>
-                    </div>
+            <!-- Level 3 -->
+            <div class="level">
+                <div class="level-header">
+                    <span class="level-number">Level 3</span>
+                    <span class="level-type">
+                        <span class="material-icons">edit</span>
+                        Write
+                    </span>
                 </div>
-
-                <!-- Level 6: Read Numbers -->
-                <div class="level">
-                    <div class="level-header">
-                        <span class="level-number">Level 6</span>
-                        <span class="level-type">
-                            <span class="material-icons">visibility</span>
-                            Read
-                        </span>
-                    </div>
-                    <h2>Numbers</h2>
-                    <a href="read.html?level=numbers" class="start-button">
-                        Start Practice
-                    </a>
-                    <div class="progress-bar">
-                        <div class="progress" id="readNumbersProgress"></div>
-                    </div>
+                <h2>Consonants</h2>
+                <a href="practice.html?mode=learn&level=consonants" class="start-button">Start Practice</a>
+                <div class="progress-bar">
+                    <div class="progress" style="width: 0%"></div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="letters.js"></script>
     <script src="menu.js"></script>
     <script src="script.js"></script>
