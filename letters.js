@@ -2,82 +2,69 @@
 const kannadaLetters = {
     vowels: [
         {
-            letter: 'ಅ',
-            transliteration: 'a',
-            example: 'ಅಮ್ಮ',
-            exampleTransliteration: 'amma (mother)'
+            letter: "ಅ",
+            pronunciation: "a",
+            examples: ["ಅಮ್ಮ (amma - mother)", "ಅಪ್ಪ (appa - father)"]
         },
         {
-            letter: 'ಆ',
-            transliteration: 'aa',
-            example: 'ಆನೆ',
-            exampleTransliteration: 'aane (elephant)'
+            letter: "ಆ",
+            pronunciation: "aa",
+            examples: ["ಆನೆ (aane - elephant)", "ಆಕಾಶ (aakaasha - sky)"]
         },
         {
-            letter: 'ಇ',
-            transliteration: 'i',
-            example: 'ಇಲಿ',
-            exampleTransliteration: 'ili (mouse)'
+            letter: "ಇ",
+            pronunciation: "i",
+            examples: ["ಇಲಿ (ili - mouse)", "ಇಂದು (indu - today)"]
         },
         {
-            letter: 'ಈ',
-            transliteration: 'ii',
-            example: 'ಈರುಳ್ಳಿ',
-            exampleTransliteration: 'eerulli (onion)'
+            letter: "ಈ",
+            pronunciation: "ee",
+            examples: ["ಈಗ (eega - now)", "ಈಶ (eesha - god)"]
         },
         {
-            letter: 'ಉ',
-            transliteration: 'u',
-            example: 'ಉಡುಪಿ',
-            exampleTransliteration: 'udupi (city name)'
+            letter: "ಉ",
+            pronunciation: "u",
+            examples: ["ಉಡುಪಿ (udupi - city name)", "ಉಪ್ಪು (uppu - salt)"]
         },
         {
-            letter: 'ಊ',
-            transliteration: 'uu',
-            example: 'ಊಟ',
-            exampleTransliteration: 'oota (meal)'
+            letter: "ಊ",
+            pronunciation: "oo",
+            examples: ["ಊಟ (oota - meal)", "ಊರು (ooru - town)"]
         },
         {
-            letter: 'ಋ',
-            transliteration: 'ru',
-            example: 'ಋಷಿ',
-            exampleTransliteration: 'rushi (sage)'
+            letter: "ಋ",
+            pronunciation: "ru",
+            examples: ["ಋಷಿ (rushi - sage)", "ಋತು (rutu - season)"]
         },
         {
-            letter: 'ಎ',
-            transliteration: 'e',
-            example: 'ಎಲೆ',
-            exampleTransliteration: 'ele (leaf)'
+            letter: "ಎ",
+            pronunciation: "e",
+            examples: ["ಎಲೆ (ele - leaf)", "ಎಮ್ಮೆ (emme - buffalo)"]
         },
         {
-            letter: 'ಏ',
-            transliteration: 'ee',
-            example: 'ಏಣಿ',
-            exampleTransliteration: 'eeni (ladder)'
+            letter: "ಏ",
+            pronunciation: "ae",
+            examples: ["ಏಣಿ (aeni - ladder)", "ಏನು (aenu - what)"]
         },
         {
-            letter: 'ಐ',
-            transliteration: 'ai',
-            example: 'ಐದು',
-            exampleTransliteration: 'aidu (five)'
+            letter: "ಐ",
+            pronunciation: "ai",
+            examples: ["ಐದು (aidu - five)", "ಐನೂರು (ainooru - five hundred)"]
         },
         {
-            letter: 'ಒ',
-            transliteration: 'o',
-            example: 'ಒಂದು',
-            exampleTransliteration: 'ondu (one)'
+            letter: "ಒ",
+            pronunciation: "o",
+            examples: ["ಒಂದು (ondu - one)", "ಒಳ್ಳೆಯದು (olleyadu - good)"]
         },
         {
-            letter: 'ಓ',
-            transliteration: 'oo',
-            example: 'ಓಡು',
-            exampleTransliteration: 'oodu (run)'
+            letter: "ಓ",
+            pronunciation: "o",
+            examples: ["ಓಡು (odu - run)", "ಓದು (odu - read)"]
         },
         {
-            letter: 'ಔ',
-            transliteration: 'au',
-            example: 'ಔಷಧಿ',
-            exampleTransliteration: 'aushadhi (medicine)'
+            letter: "ಔ",
+            pronunciation: "au",
+            examples: ["ಔಷಧಿ (aushadhi - medicine)", "ಔತಣ (autana - feast)"]
         }
     ],
     consonants: [
