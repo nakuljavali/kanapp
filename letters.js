@@ -4,81 +4,109 @@ const kannadaLetters = {
         {
             letter: "ಅ",
             pronunciation: "a",
+            transliteration: "a",
+            type: "vowel",
             examples: ["ಅಮ್ಮ (amma - mother)", "ಅಪ್ಪ (appa - father)"]
         },
         {
             letter: "ಆ",
             pronunciation: "aa",
+            transliteration: "aa",
+            type: "vowel",
             examples: ["ಆನೆ (aane - elephant)", "ಆಕಾಶ (aakaasha - sky)"]
         },
         {
             letter: "ಇ",
             pronunciation: "i",
+            transliteration: "i",
+            type: "vowel",
             examples: ["ಇಲಿ (ili - mouse)", "ಇಂದು (indu - today)"]
         },
         {
             letter: "ಈ",
             pronunciation: "ee",
+            transliteration: "ee",
+            type: "vowel",
             examples: ["ಈಗ (eega - now)", "ಈಶ (eesha - god)"]
         },
         {
             letter: "ಉ",
             pronunciation: "u",
+            transliteration: "u",
+            type: "vowel",
             examples: ["ಉಡುಪಿ (udupi - city name)", "ಉಪ್ಪು (uppu - salt)"]
         },
         {
             letter: "ಊ",
             pronunciation: "oo",
+            transliteration: "oo",
+            type: "vowel",
             examples: ["ಊಟ (oota - meal)", "ಊರು (ooru - town)"]
         },
         {
             letter: "ಋ",
             pronunciation: "ru",
+            transliteration: "ru",
+            type: "vowel",
             examples: ["ಋಷಿ (rushi - sage)", "ಋತು (rutu - season)"]
         },
         {
             letter: "ಎ",
             pronunciation: "e",
+            transliteration: "e",
+            type: "vowel",
             examples: ["ಎಲೆ (ele - leaf)", "ಎಮ್ಮೆ (emme - buffalo)"]
         },
         {
             letter: "ಏ",
             pronunciation: "ae",
+            transliteration: "ae",
+            type: "vowel",
             examples: ["ಏಣಿ (aeni - ladder)", "ಏನು (aenu - what)"]
         },
         {
             letter: "ಐ",
             pronunciation: "ai",
+            transliteration: "ai",
+            type: "vowel",
             examples: ["ಐದು (aidu - five)", "ಐನೂರು (ainooru - five hundred)"]
         },
         {
             letter: "ಒ",
             pronunciation: "o",
+            transliteration: "o",
+            type: "vowel",
             examples: ["ಒಂದು (ondu - one)", "ಒಳ್ಳೆಯದು (olleyadu - good)"]
         },
         {
             letter: "ಓ",
             pronunciation: "o",
+            transliteration: "o",
+            type: "vowel",
             examples: ["ಓಡು (odu - run)", "ಓದು (odu - read)"]
         },
         {
             letter: "ಔ",
             pronunciation: "au",
+            transliteration: "au",
+            type: "vowel",
             examples: ["ಔಷಧಿ (aushadhi - medicine)", "ಔತಣ (autana - feast)"]
         }
     ],
     consonants: [
         {
-            letter: 'ಕ',
-            transliteration: 'ka',
-            example: 'ಕಮಲ',
-            exampleTransliteration: 'kamala (lotus)'
+            letter: "ಕ",
+            pronunciation: "ka",
+            transliteration: "ka",
+            type: "consonant",
+            examples: ["ಕಮಲ (kamala - lotus)", "ಕನ್ನಡ (kannada - Kannada)"]
         },
         {
-            letter: 'ಖ',
-            transliteration: 'kha',
-            example: 'ಖಗ',
-            exampleTransliteration: 'khaga (bird)'
+            letter: "ಖ",
+            pronunciation: "kha",
+            transliteration: "kha",
+            type: "consonant",
+            examples: ["ಖಗ (khaga - bird)", "ಖನಿ (khani - mine)"]
         }
         // Add more consonants here
     ],
@@ -108,7 +136,7 @@ function getAllLetters() {
 }
 
 // Export for use in other files
-window.kannadaLetters = kannadaLetters;
+window.letters = kannadaLetters;
 window.getAllLetters = getAllLetters;
 
 function createLetterGrid() {
@@ -152,3 +180,30 @@ function createLetterGrid() {
 if (document.getElementById('lettersGrid')) {
     createLetterGrid();
 }
+
+// Helper function to get random letter
+window.getRandomLetter = function(type) {
+    console.log('Getting random letter for type:', type);
+    const letterSet = window.letters[type];
+    
+    if (!letterSet || letterSet.length === 0) {
+        console.error('Invalid letter type or empty set:', type);
+        return null;
+    }
+    
+    const randomLetter = letterSet[Math.floor(Math.random() * letterSet.length)];
+    console.log('Selected letter:', randomLetter);
+    return randomLetter;
+};
+
+// Helper function to check answers
+window.checkAnswer = function(letter, answer) {
+    if (!letter) return false;
+    const correctAnswers = [
+        letter.transliteration,
+        letter.pronunciation
+    ];
+    return correctAnswers.includes(answer.toLowerCase().trim());
+};
+
+console.log('Letters.js loaded with data:', window.letters);

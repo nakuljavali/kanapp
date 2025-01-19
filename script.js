@@ -117,8 +117,8 @@ function setNewLetter() {
         targetLetter.innerHTML = `
             <div class="letter">${randomLetter.letter}</div>
             <div class="transliteration">${randomLetter.transliteration}</div>
-            <div class="example">${randomLetter.example}</div>
-            <div class="example-transliteration">${randomLetter.exampleTransliteration}</div>
+            <div class="example">${randomLetter.pronunciation}</div>
+            <div class="example-transliteration">${randomLetter.examples}</div>
         `;
     } else {
         // Practice mode - existing code...
@@ -310,10 +310,10 @@ function checkDrawing() {
     const similarity = calculateSimilarity(imageData);
     
     let message;
-    if (similarity < 5) {
+    if (similarity < 1) {
         message = `Try again! (Debug: ${similarity}% match)`;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-    } else if (similarity >= 5 && similarity < 10) {
+    } else if (similarity >= 1 && similarity < 5) {
         message = `Almost there! (Debug: ${similarity}% match)`;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     } else {
@@ -368,26 +368,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const levels = document.querySelectorAll('.level');
     levels.forEach((level, index) => {
         const progressBar = level.querySelector('.progress');
-        if (progressBar) {
-            progressBar.style.width = '0%';
-        }
-    });
+        const levelKey = `levelProgress_${index + 1}`; // Unique key for each level
 
-    // Load saved progress if any
-    try {
-        const savedProgress = localStorage.getItem('learningProgress');
+        // Load saved progress
+        const savedProgress = localStorage.getItem(levelKey);
         if (savedProgress) {
-            const progress = JSON.parse(savedProgress);
-            levels.forEach((level, index) => {
-                const progressBar = level.querySelector('.progress');
-                if (progressBar && progress[index]) {
-                    progressBar.style.width = `${progress[index]}%`;
-                }
+            progressBar.style.width = `${savedProgress}%`;
+        } else {
+            progressBar.style.width = '0%'; // Default to 0% if no progress
+        }
+
+        // Add click handler for start buttons
+        const startButton = level.querySelector('.start-button');
+        if (startButton) {
+            startButton.addEventListener('click', () => {
+                // Simulate learning process and update progress
+                const newProgress = 100; // Set this to the actual progress value
+                localStorage.setItem(levelKey, newProgress); // Save progress
+                progressBar.style.width = `${newProgress}%`; // Update progress bar
             });
         }
-    } catch (error) {
-        console.log('No saved progress found');
-    }
+    });
 });
 
 // Start the app

@@ -63,23 +63,15 @@ h1 {
 
 /* Canvas and Drawing Area */
 .canvas-container {
-    width: 100%;
-    max-width: 500px;
-    margin: 20px auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
+    position: relative;
+    margin: 20px 0;
 }
 
 #drawingCanvas {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1;
-    border: 2px solid #F26B4D;
-    background: white;
-    border-radius: 8px;
-    touch-action: none; /* Prevents default touch actions like scrolling */
+    border: 1px solid #ccc;
+    cursor: crosshair; /* Change cursor to indicate drawing */
+    width: 100%; /* Make it responsive */
+    height: auto; /* Maintain aspect ratio */
 }
 
 /* Buttons */
@@ -112,6 +104,7 @@ button:hover {
 
 /* Letter Display */
 .letter-display {
+    text-align: center;
     margin: 20px 0;
 }
 
@@ -682,4 +675,32 @@ body.drawing {
 .container {
     padding-top: 60px;
     min-height: calc(100vh - 60px);
+}
+
+/* Add these styles for the practice page */
+.transliteration {
+    margin: 16px 0;
+    font-size: 1.2em;
+    color: #333;
+}
+
+.transliteration-text {
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.pronunciation-text {
+    color: #666;
+    font-style: italic;
+}
+
+.hint-content {
+    padding: 16px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    margin: 16px 0;
+}
+
+.hint-content div {
+    margin: 8px 0;
 }
