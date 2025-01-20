@@ -76,14 +76,11 @@ function updateProgressBars() {
         // Update progress bar width
         progressBar.style.width = `${progress}%`;
         
-        // Update or add progress text
-        let progressText = progressBar.querySelector('.progress-text');
-        if (!progressText) {
-            progressText = document.createElement('div');
-            progressText.className = 'progress-text';
-            progressBar.appendChild(progressText);
+        // Remove any existing progress text
+        const existingProgressText = progressBar.querySelector('.progress-text');
+        if (existingProgressText) {
+            existingProgressText.remove();
         }
-        progressText.textContent = `${progress}%`;
     });
 }
 
@@ -115,41 +112,41 @@ function init() {
 function setNewLetter() {
     const urlParams = new URLSearchParams(window.location.search);
     const mode = urlParams.get('mode');
+    const level = urlParams.get('level') || 'vowels';
     
     if (mode === 'learn') {
-        const currentLevel = localStorage.getItem('currentLevel') || 'vowels';
         let availableLetters;
         
         // Select letters based on current level
-        switch(currentLevel) {
-            case 'vowels':
-                availableLetters = kannadaLetters.vowels;
-                break;
-            case 'consonants':
-                availableLetters = kannadaLetters.consonants;
-                break;
-            case 'numbers':
-                availableLetters = kannadaLetters.numbers;
-                break;
-            default:
-                availableLetters = kannadaLetters.vowels;
+        if (level === 'vowels') {
+            availableLetters = window.letters.vowels;
+        } else if (level.startsWith('consonants_')) {
+            // Extract the consonant group (e.g., 'velar' from 'consonants_velar')
+            const group = level.split('_')[1];
+            availableLetters = window.letters.consonants[group] || [];
+        }
+        
+        if (!availableLetters || availableLetters.length === 0) {
+            console.error('No letters available for level:', level);
+            targetLetter.innerHTML = `
+                <div class="letter">❌</div>
+                <div class="transliteration">Error: Invalid level</div>
+            `;
+            return;
         }
         
         // Filter out learned letters
+        const learntLetters = window.Storage.getLearntLetters();
         const unlearntLetters = availableLetters.filter(letterObj => 
-            !window.Storage.getLearntLetters().includes(letterObj.letter)
+            !learntLetters.includes(letterObj.letter)
         );
         
         if (unlearntLetters.length === 0) {
             // Level completed!
-            let nextLevel = '';
-            if (currentLevel === 'vowels') nextLevel = 'consonants';
-            else if (currentLevel === 'consonants') nextLevel = 'numbers';
-            
             targetLetter.innerHTML = `
                 <div class="letter">🎉</div>
                 <div class="transliteration">Level Complete!</div>
-                <div class="example">${nextLevel ? `Ready for ${nextLevel}!` : 'All levels completed!'}</div>
+                <div class="example">Great job! Try the next level.</div>
                 <div class="example-transliteration">
                     <a href="index.html" class="nav-button">Back to Home</a>
                 </div>
@@ -167,7 +164,28 @@ function setNewLetter() {
             <div class="example-transliteration">${randomLetter.examples}</div>
         `;
     } else {
-        // Practice mode - existing code...
+        // Practice mode - get a random letter from the current level only
+        let availableLetters;
+        if (level === 'vowels') {
+            availableLetters = window.letters.vowels;
+        } else if (level.startsWith('consonants_')) {
+            const group = level.split('_')[1];
+            availableLetters = window.letters.consonants[group] || [];
+        }
+        
+        if (!availableLetters || availableLetters.length === 0) {
+            console.error('No letters available for level:', level);
+            return;
+        }
+        
+        const randomLetter = availableLetters[Math.floor(Math.random() * availableLetters.length)];
+        currentLetter = randomLetter.letter;
+        targetLetter.innerHTML = `
+            <div class="letter">${randomLetter.letter}</div>
+            <div class="transliteration">${randomLetter.transliteration}</div>
+            <div class="example">${randomLetter.pronunciation}</div>
+            <div class="example-transliteration">${randomLetter.examples}</div>
+        `;
     }
 }
 

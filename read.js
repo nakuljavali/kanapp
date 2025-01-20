@@ -34,8 +34,24 @@ function setNewLetter() {
     answerInput.disabled = false;
     answerInput.focus();
     
+    // Get level from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const level = urlParams.get('level') || 'vowels';
+    
     // Get available letters for current level
-    let availableLetters = kannadaLetters[currentLevel];
+    let availableLetters;
+    if (level === 'vowels') {
+        availableLetters = window.letters.vowels;
+    } else if (level.startsWith('consonants_')) {
+        const group = level.split('_')[1];
+        availableLetters = window.letters.consonants[group] || [];
+    }
+    
+    if (!availableLetters || availableLetters.length === 0) {
+        console.error('No letters available for level:', level);
+        targetLetter.textContent = 'Error: Invalid level';
+        return;
+    }
     
     // Select random letter
     currentLetter = availableLetters[Math.floor(Math.random() * availableLetters.length)];

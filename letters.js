@@ -93,23 +93,54 @@ const kannadaLetters = {
             examples: ["ಔಷಧಿ (aushadhi - medicine)", "ಔತಣ (autana - feast)"]
         }
     ],
-    consonants: [
-        {
-            letter: "ಕ",
-            pronunciation: "ka",
-            transliteration: "ka",
-            type: "consonant",
-            examples: ["ಕಮಲ (kamala - lotus)", "ಕನ್ನಡ (kannada - Kannada)"]
-        },
-        {
-            letter: "ಖ",
-            pronunciation: "kha",
-            transliteration: "kha",
-            type: "consonant",
-            examples: ["ಖಗ (khaga - bird)", "ಖನಿ (khani - mine)"]
-        }
-        // Add more consonants here
-    ],
+    consonants: {
+        velar: [
+            { letter: "ಕ", transliteration: "ka", pronunciation: "like 'k' in 'kite'", examples: "ಕಮಲ (kamala) - lotus" },
+            { letter: "ಖ", transliteration: "kha", pronunciation: "aspirated 'k'", examples: "ಖಗ (khaga) - bird" },
+            { letter: "ಗ", transliteration: "ga", pronunciation: "like 'g' in 'gate'", examples: "ಗಣಿತ (ganita) - mathematics" },
+            { letter: "ಘ", transliteration: "gha", pronunciation: "aspirated 'g'", examples: "ಘಟ (ghata) - pot" },
+            { letter: "ಙ", transliteration: "ṅa", pronunciation: "like 'ng' in 'sing'", examples: "ಅಙ್ಕ (anka) - number" }
+        ],
+        palatal: [
+            { letter: "ಚ", transliteration: "ca", pronunciation: "like 'ch' in 'chair'", examples: "ಚಂದ್ರ (chandra) - moon" },
+            { letter: "ಛ", transliteration: "cha", pronunciation: "aspirated 'ch'", examples: "ಛತ್ರಿ (chatri) - umbrella" },
+            { letter: "ಜ", transliteration: "ja", pronunciation: "like 'j' in 'joy'", examples: "ಜಲ (jala) - water" },
+            { letter: "ಝ", transliteration: "jha", pronunciation: "aspirated 'j'", examples: "ಝರಿ (jhari) - waterfall" },
+            { letter: "ಞ", transliteration: "ña", pronunciation: "like 'ny' in 'canyon'", examples: "ಪುಞ್ಜ (punja) - heap" }
+        ],
+        retroflex: [
+            { letter: "ಟ", transliteration: "ṭa", pronunciation: "hard 't'", examples: "ಟೊಮೆಟೊ (tomato) - tomato" },
+            { letter: "ಠ", transliteration: "ṭha", pronunciation: "aspirated hard 't'", examples: "ಠೇವಣಿ (thevani) - deposit" },
+            { letter: "ಡ", transliteration: "ḍa", pronunciation: "hard 'd'", examples: "ಡಬ್ಬ (dabba) - box" },
+            { letter: "ಢ", transliteration: "ḍha", pronunciation: "aspirated hard 'd'", examples: "ಢಕ್ಕೆ (dhakke) - drum" },
+            { letter: "ಣ", transliteration: "ṇa", pronunciation: "retroflex 'n'", examples: "ಕಣ್ಣು (kannu) - eye" }
+        ],
+        dental: [
+            { letter: "ತ", transliteration: "ta", pronunciation: "soft 't'", examples: "ತಂದೆ (tande) - father" },
+            { letter: "ಥ", transliteration: "tha", pronunciation: "aspirated soft 't'", examples: "ಥಟ್ಟನೆ (thattane) - suddenly" },
+            { letter: "ದ", transliteration: "da", pronunciation: "soft 'd'", examples: "ದೀಪ (dīpa) - lamp" },
+            { letter: "ಧ", transliteration: "dha", pronunciation: "aspirated soft 'd'", examples: "ಧನ (dhana) - wealth" },
+            { letter: "ನ", transliteration: "na", pronunciation: "like 'n' in 'net'", examples: "ನಾಯಿ (nāyi) - dog" }
+        ],
+        labial: [
+            { letter: "ಪ", transliteration: "pa", pronunciation: "like 'p' in 'pen'", examples: "ಪುಸ್ತಕ (pustaka) - book" },
+            { letter: "ಫ", transliteration: "pha", pronunciation: "aspirated 'p'", examples: "ಫಲ (phala) - fruit" },
+            { letter: "ಬ", transliteration: "ba", pronunciation: "like 'b' in 'boy'", examples: "ಬಾಗಿಲು (bāgilu) - door" },
+            { letter: "ಭ", transliteration: "bha", pronunciation: "aspirated 'b'", examples: "ಭೂಮಿ (bhūmi) - earth" },
+            { letter: "ಮ", transliteration: "ma", pronunciation: "like 'm' in 'mother'", examples: "ಮನೆ (mane) - house" }
+        ],
+        other: [
+            { letter: "ಯ", transliteration: "ya", pronunciation: "like 'y' in 'yes'", examples: "ಯಮುನಾ (yamunā) - Yamuna" },
+            { letter: "ರ", transliteration: "ra", pronunciation: "like 'r' in 'run'", examples: "ರವಿ (ravi) - sun" },
+            { letter: "ಲ", transliteration: "la", pronunciation: "like 'l' in 'light'", examples: "ಲತೆ (late) - creeper" },
+            { letter: "ವ", transliteration: "va", pronunciation: "like 'v' in 'vine'", examples: "ವನ (vana) - forest" },
+            { letter: "ಶ", transliteration: "śa", pronunciation: "like 'sh' in 'shine'", examples: "ಶಾಲೆ (śāle) - school" },
+            { letter: "ಷ", transliteration: "ṣa", pronunciation: "like 'sh' in 'shore'", examples: "ಷಟ್ಪದಿ (ṣaṭpadi) - hexapod" },
+            { letter: "ಸ", transliteration: "sa", pronunciation: "like 's' in 'sun'", examples: "ಸರ (sara) - necklace" },
+            { letter: "ಹ", transliteration: "ha", pronunciation: "like 'h' in 'house'", examples: "ಹಕ್ಕಿ (hakki) - bird" },
+            { letter: "ಳ", transliteration: "ḷa", pronunciation: "retroflex 'l'", examples: "ಬೆಳೆ (beḷe) - crop" }
+        ]
+    },
     numbers: [
         {
             letter: '೧',
@@ -130,7 +161,12 @@ const kannadaLetters = {
 function getAllLetters() {
     return [
         ...kannadaLetters.vowels,
-        ...kannadaLetters.consonants,
+        ...kannadaLetters.consonants.velar,
+        ...kannadaLetters.consonants.palatal,
+        ...kannadaLetters.consonants.retroflex,
+        ...kannadaLetters.consonants.dental,
+        ...kannadaLetters.consonants.labial,
+        ...kannadaLetters.consonants.other,
         ...kannadaLetters.numbers
     ];
 }
