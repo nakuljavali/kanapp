@@ -60,12 +60,8 @@ function checkAnswer() {
         answerInput.disabled = true;
         nextButton.style.display = 'flex';
         
-        // Store progress
-        const learntLetters = JSON.parse(localStorage.getItem('readLearntLetters') || '[]');
-        if (!learntLetters.includes(currentLetter.letter)) {
-            learntLetters.push(currentLetter.letter);
-            localStorage.setItem('readLearntLetters', JSON.stringify(learntLetters));
-        }
+        // Store progress using new storage
+        window.Storage.addLearntLetter(currentLetter.letter, 'read');
     } else {
         feedback.textContent = 'Try again! That\'s not how you read this letter.';
         feedback.className = 'feedback incorrect';

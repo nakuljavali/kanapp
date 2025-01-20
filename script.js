@@ -1,69 +1,115 @@
-// First, let's add debug logs for initialization
 console.log('Script starting...');
 
-// Get DOM elements
-const canvas = document.getElementById('drawingCanvas');
-console.log('Canvas element:', canvas);
-
-const ctx = canvas?.getContext('2d');
-console.log('Canvas context:', ctx);
-
-const targetLetter = document.getElementById('targetLetter');
-console.log('Target letter element:', targetLetter);
-
-const clearButton = document.getElementById('clearCanvas');
-console.log('Clear button:', clearButton);
-
-const submitButton = document.getElementById('submitDrawing');
-console.log('Submit button:', submitButton);
-
-const resultDiv = document.getElementById('result');
-console.log('Result div:', resultDiv);
-
-// Check if we have all necessary elements
-if (!canvas || !ctx || !targetLetter || !clearButton || !submitButton || !resultDiv) {
-    console.error('Missing required elements!');
-    throw new Error('Missing required elements');
-}
-
+// Declare canvas-related variables at the top with let
+let canvas, ctx, targetLetter, clearButton, submitButton, resultDiv;
 let currentLetter;
 let isDrawing = false;
 let timeout;
 
 // Add tracking for learned letters
-let learntLetters = JSON.parse(localStorage.getItem('learntLetters') || '[]');
-let lastPracticeDates = JSON.parse(localStorage.getItem('lastPracticeDates') || '{}');
+// let learntLetters = JSON.parse(localStorage.getItem('learntLetters') || '[]');
+// let lastPracticeDates = JSON.parse(localStorage.getItem('lastPracticeDates') || '{}');
 
 function updateLearningProgress(letter) {
-    if (!learntLetters.includes(letter)) {
-        learntLetters.push(letter);
-        localStorage.setItem('learntLetters', JSON.stringify(learntLetters));
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode');
+    const isReadMode = document.querySelector('.level-type')?.textContent.toLowerCase().includes('read');
+    window.Storage.addLearntLetter(letter, isReadMode ? 'read' : 'write');
+}
+
+// Initialize canvas elements if on practice page
+function initializeCanvasElements() {
+    if (!window.location.pathname.includes('practice.html')) return false;
+
+    canvas = document.getElementById('drawingCanvas');
+    console.log('Canvas element:', canvas);
+
+    ctx = canvas?.getContext('2d');
+    console.log('Canvas context:', ctx);
+
+    targetLetter = document.getElementById('targetLetter');
+    console.log('Target letter element:', targetLetter);
+
+    clearButton = document.getElementById('clearCanvas');
+    console.log('Clear button:', clearButton);
+
+    submitButton = document.getElementById('submitDrawing');
+    console.log('Submit button:', submitButton);
+
+    resultDiv = document.getElementById('result');
+    console.log('Result div:', resultDiv);
+
+    // Check if we have all necessary elements for practice page
+    if (!canvas || !ctx || !targetLetter || !clearButton || !submitButton || !resultDiv) {
+        console.error('Missing required elements for practice page!');
+        return false;
     }
-    lastPracticeDates[letter] = Date.now();
-    localStorage.setItem('lastPracticeDates', JSON.stringify(lastPracticeDates));
+    return true;
+}
+
+// Add this function to update progress bars
+function updateProgressBars() {
+    const levels = document.querySelectorAll('.level');
+    console.log('Found levels:', levels.length);
+    
+    levels.forEach((level, index) => {
+        const progressBar = level.querySelector('.progress');
+        if (!progressBar) {
+            console.error(`No progress bar found for level ${index + 1}`);
+            return;
+        }
+
+        const levelHeader = level.querySelector('h2');
+        if (!levelHeader) {
+            console.error(`No header found for level ${index + 1}`);
+            return;
+        }
+
+        const levelType = levelHeader.textContent.toLowerCase();
+        const levelTypeElement = level.querySelector('.level-type');
+        const mode = levelTypeElement && levelTypeElement.textContent.toLowerCase().includes('read') ? 'read' : 'write';
+        
+        // Get progress directly from Storage
+        const progress = window.Storage.getLevelProgress(levelType, mode);
+        console.log(`Progress for ${levelType} (${mode}):`, progress);
+
+        // Update progress bar width
+        progressBar.style.width = `${progress}%`;
+        
+        // Update or add progress text
+        let progressText = progressBar.querySelector('.progress-text');
+        if (!progressText) {
+            progressText = document.createElement('div');
+            progressText.className = 'progress-text';
+            progressBar.appendChild(progressText);
+        }
+        progressText.textContent = `${progress}%`;
+    });
 }
 
 // Initialize
 function init() {
-    // Check if we're in free learn mode
-    const urlParams = new URLSearchParams(window.location.search);
-    const mode = urlParams.get('mode');
-    
-    if (mode === 'free') {
-        // Get the selected letter from localStorage
-        const selectedLetter = localStorage.getItem('selectedLetter');
-        if (selectedLetter) {
-            currentLetter = selectedLetter;
-            targetLetter.textContent = currentLetter;
+    if (window.location.pathname.includes('practice.html')) {
+        if (!initializeCanvasElements()) return;
+        
+        // Check if we're in free learn mode
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode');
+        
+        if (mode === 'free') {
+            const selectedLetter = localStorage.getItem('selectedLetter');
+            if (selectedLetter) {
+                currentLetter = selectedLetter;
+                targetLetter.textContent = currentLetter;
+            } else {
+                setNewLetter();
+            }
         } else {
-            // Fallback to random if no letter selected
             setNewLetter();
         }
-    } else {
-        setNewLetter();
+        
+        setupCanvas();
     }
-    
-    setupCanvas();
 }
 
 function setNewLetter() {
@@ -91,7 +137,7 @@ function setNewLetter() {
         
         // Filter out learned letters
         const unlearntLetters = availableLetters.filter(letterObj => 
-            !learntLetters.includes(letterObj.letter)
+            !window.Storage.getLearntLetters().includes(letterObj.letter)
         );
         
         if (unlearntLetters.length === 0) {
@@ -354,42 +400,54 @@ function calculateSimilarity(imageData) {
     return Math.min(Math.max(coverage * 5, 0), 100);
 }
 
+// Update the DOMContentLoaded event listener
 document.addEventListener('DOMContentLoaded', () => {
-    // Only initialize if we're on the learning tree page
-    const learningTree = document.querySelector('.learning-tree');
-    if (!learningTree) {
-        console.log('Not on learning tree page');
-        return;
+    console.log('DOM Content Loaded');
+    
+    // Initialize based on current page
+    if (window.location.pathname.includes('practice.html')) {
+        init();
+    } else if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
+        // Home page initialization (progress bars)
+        const checkDependencies = () => {
+            if (window.letters && window.Storage && typeof window.Storage.getLearntLetters === 'function') {
+                console.log('Dependencies loaded, updating progress bars');
+                updateProgressBars();
+            } else {
+                console.log('Waiting for dependencies...', {
+                    letters: !!window.letters,
+                    storage: !!window.Storage,
+                    getLearntLetters: window.Storage?.getLearntLetters
+                });
+                setTimeout(checkDependencies, 100);
+            }
+        };
+        checkDependencies();
     }
-
-    console.log('Initializing learning tree');
-
-    // Initialize progress bars
-    const levels = document.querySelectorAll('.level');
-    levels.forEach((level, index) => {
-        const progressBar = level.querySelector('.progress');
-        const levelKey = `levelProgress_${index + 1}`; // Unique key for each level
-
-        // Load saved progress
-        const savedProgress = localStorage.getItem(levelKey);
-        if (savedProgress) {
-            progressBar.style.width = `${savedProgress}%`;
-        } else {
-            progressBar.style.width = '0%'; // Default to 0% if no progress
-        }
-
-        // Add click handler for start buttons
-        const startButton = level.querySelector('.start-button');
-        if (startButton) {
-            startButton.addEventListener('click', () => {
-                // Simulate learning process and update progress
-                const newProgress = 100; // Set this to the actual progress value
-                localStorage.setItem(levelKey, newProgress); // Save progress
-                progressBar.style.width = `${newProgress}%`; // Update progress bar
-            });
-        }
-    });
 });
 
-// Start the app
-init(); 
+// Replace the process.env check with a simpler debug button
+const isDebugMode = localStorage.getItem('debugMode') === 'true';
+if (isDebugMode) {
+    // Add debug button
+    const debugButton = document.createElement('button');
+    debugButton.style.position = 'fixed';
+    debugButton.style.bottom = '10px';
+    debugButton.style.right = '10px';
+    debugButton.style.zIndex = '9999';
+    debugButton.textContent = 'Debug Storage';
+    debugButton.onclick = () => {
+        console.log('Current Storage State:', {
+            learntLetters: window.Storage.getLearntLetters(),
+            levelProgress: {
+                vowels_write: window.Storage.getLevelProgress('vowels', 'write'),
+                vowels_read: window.Storage.getLevelProgress('vowels', 'read'),
+                consonants_write: window.Storage.getLevelProgress('consonants', 'write')
+            }
+        });
+        // Force update
+        window.Storage.updateLevelProgress();
+        updateProgressBars();
+    };
+    document.body.appendChild(debugButton);
+} 

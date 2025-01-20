@@ -36,11 +36,7 @@ function getNextLetter() {
 
 function updateLearningProgress(letter, similarity) {
     if (similarity >= 20) { // Success threshold
-        learntLetters = [...new Set([...learntLetters, letter])];
-        lastPracticeDates[letter] = Date.now();
-        
-        localStorage.setItem('learntLetters', JSON.stringify(learntLetters));
-        localStorage.setItem('lastPracticeDates', JSON.stringify(lastPracticeDates));
+        window.Storage.addLearntLetter(letter, 'write');
     }
 }
 
