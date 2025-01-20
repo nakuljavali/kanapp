@@ -82,5 +82,28 @@ function getDrawingData() {
     return ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
 
-// Export functions if needed
-export { initializeCanvas, clearCanvas, getTargetLetterData }; 
+// Canvas utility functions
+function calculateSimilarity(imageData) {
+    if (!imageData) return 0;
+    
+    let drawnPixels = 0;
+    const data = imageData.data;
+    const totalPixels = imageData.width * imageData.height;
+    
+    for (let i = 3; i < data.length; i += 4) {
+        if (data[i] > 0) {
+            drawnPixels++;
+        }
+    }
+    
+    const percentageDrawn = (drawnPixels / totalPixels) * 100;
+    const normalizedScore = Math.min(Math.max((percentageDrawn - 0.5) * 10, 0), 100);
+    
+    return normalizedScore;
+}
+
+// Add functions to window object for access from other files
+window.getDrawingData = getDrawingData;
+window.clearCanvas = clearCanvas;
+window.getTargetLetterData = getTargetLetterData;
+window.calculateSimilarity = calculateSimilarity; 

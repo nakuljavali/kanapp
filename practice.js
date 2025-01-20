@@ -99,8 +99,7 @@ function calculateMatchPercentage() {
     return (matchCount / totalCount) * 100 || 0;
 }
 
-// Rest of the existing canvas and drawing functions...
-
+// Practice page functionality
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Practice.js loaded');
     
@@ -157,12 +156,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleSubmit() {
-        const matchPercentage = calculateMatchPercentage();
+        const matchPercentage = window.calculateSimilarity(window.getDrawingData());
         alert(`Match Percentage: ${matchPercentage}%`);
     }
-
-    // Initialize the canvas
-    initializeCanvas('drawingCanvas');
 
     // Event listeners
     if (nextButton) {
