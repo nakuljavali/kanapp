@@ -12,7 +12,8 @@ const canvasState = {
     currentLetter: null,
     lastX: 0,
     lastY: 0,
-    initRetryCount: 0
+    initRetryCount: 0,
+    drawingTimeout: null
 };
 
 // Make canvasState accessible to other files
@@ -79,9 +80,19 @@ function updateProgressBars() {
         const levelTypeElement = level.querySelector('.level-type');
         const mode = levelTypeElement && levelTypeElement.textContent.toLowerCase().includes('read') ? 'read' : 'write';
         
+        // Handle consonant levels properly by using the full level name
+        let progressLevel = levelType;
+        if (levelType.includes('consonants')) {
+            const consonantMatch = levelType.match(/consonants\s*-\s*(\w+)/i);
+            if (consonantMatch) {
+                const group = consonantMatch[1].toLowerCase();
+                progressLevel = `consonants_${group}`;
+            }
+        }
+        
         // Get progress directly from Storage
-        const progress = window.Storage.getLevelProgress(levelType, mode);
-        console.log(`Progress for ${levelType} (${mode}):`, progress);
+        const progress = window.Storage.getLevelProgress(progressLevel, mode);
+        console.log(`Progress for ${progressLevel} (${mode}):`, progress);
 
         // Update progress bar width
         progressBar.style.width = `${progress}%`;
@@ -230,6 +241,17 @@ function startDrawing(e) {
     
     canvasState.ctx.beginPath();
     canvasState.ctx.moveTo(x, y);
+
+    // Start the auto-submit timeout
+    if (canvasState.drawingTimeout) {
+        clearTimeout(canvasState.drawingTimeout);
+    }
+    canvasState.drawingTimeout = setTimeout(() => {
+        if (canvasState.isDrawing) {
+            stopDrawing();
+            checkDrawing();
+        }
+    }, 2000);
 }
 
 function draw(e) {
@@ -253,12 +275,29 @@ function draw(e) {
     canvasState.ctx.stroke();
     canvasState.ctx.beginPath();
     canvasState.ctx.moveTo(x, y);
+
+    // Reset the auto-submit timeout on each draw
+    if (canvasState.drawingTimeout) {
+        clearTimeout(canvasState.drawingTimeout);
+    }
+    canvasState.drawingTimeout = setTimeout(() => {
+        if (canvasState.isDrawing) {
+            stopDrawing();
+            checkDrawing();
+        }
+    }, 2000);
 }
 
 function stopDrawing() {
     canvasState.isDrawing = false;
     if (canvasState.ctx) {
         canvasState.ctx.beginPath();
+    }
+    
+    // Clear the timeout if it exists
+    if (canvasState.drawingTimeout) {
+        clearTimeout(canvasState.drawingTimeout);
+        canvasState.drawingTimeout = null;
     }
 }
 
@@ -297,19 +336,42 @@ function checkDrawing() {
     const similarity = window.calculateSimilarity(drawingData);
     console.log('Similarity score:', similarity);
 
-    if (similarity > 0.7) {
-        window.canvasState.resultDiv.textContent = 'Great match! Well done!';
-        // Add letter to learnt letters
+    let message;
+    if (similarity > 5) {  // Lowered threshold from 10 to 5
+        message = `Great match! (${Math.round(similarity)}% match) Well done!`;
+        // Add letter to learnt letters and update progress
         if (window.canvasState.currentLetter) {
             window.Storage.addLearntLetter(window.canvasState.currentLetter);
+            // Get current level from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const level = urlParams.get('level') || 'vowels';
+            
+            // Handle consonant levels properly by using the full level name
+            let progressLevel = level;
+            if (level.startsWith('consonants_')) {
+                const group = level.split('_')[1];
+                progressLevel = `consonants_${group}`;
+            }
+            
+            // Update progress for the current level
+            console.log('Updating progress for level:', progressLevel);
+            window.Storage.updateLevelProgress(progressLevel, 'write');
         }
         // Set new letter after a delay
-        setTimeout(setNewLetter, 1500);
-    } else if (similarity > 0.4) {
-        window.canvasState.resultDiv.textContent = 'Close match - keep practicing!';
+        setTimeout(() => {
+            clearCanvas();
+            setNewLetter();
+        }, 1500);
+    } else if (similarity > 2) {  // Lowered threshold from 5 to 2
+        message = `Close match (${Math.round(similarity)}% match) - keep practicing!`;
+        setTimeout(clearCanvas, 1500);
     } else {
-        window.canvasState.resultDiv.textContent = 'Try again - keep practicing!';
+        message = `Try again (${Math.round(similarity)}% match) - keep practicing!`;
+        setTimeout(clearCanvas, 1500);
     }
+
+    // Show feedback message
+    window.canvasState.resultDiv.textContent = message;
 }
 
 function calculateSimilarity(imageData) {
@@ -438,6 +500,11 @@ function init() {
         return;
     }
     
+    // Initialize progress bars if we're on the main page
+    if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/')) {
+        updateProgressBars();
+    }
+    
     if (window.location.pathname.includes('practice.html')) {
         console.log('On practice page, initializing canvas...');
         if (!initializeCanvasElements()) {
@@ -456,26 +523,8 @@ function init() {
         if (mode === 'free') {
             const selectedLetter = localStorage.getItem('selectedLetter');
             if (selectedLetter && selectedLetter.trim()) {
-                // Try to get the letter object from localStorage first
-                let letterObj;
-                try {
-                    const storedLetterData = localStorage.getItem('letterData');
-                    if (storedLetterData) {
-                        letterObj = JSON.parse(storedLetterData);
-                        console.log('Found letter data in localStorage:', letterObj);
-                    }
-                } catch (e) {
-                    console.error('Error parsing stored letter data:', e);
-                }
-                
-                // If not in localStorage, search in window.letters
+                let letterObj = findLetterInAllCategories(selectedLetter);
                 if (!letterObj) {
-                    letterObj = findLetterInAllCategories(selectedLetter);
-                }
-                
-                // Fallback to basic letter object if still not found
-                if (!letterObj) {
-                    console.log('Creating basic letter object for:', selectedLetter);
                     letterObj = {
                         letter: selectedLetter,
                         transliteration: selectedLetter,
@@ -483,16 +532,12 @@ function init() {
                         examples: []
                     };
                 }
-                
-                console.log('Setting current letter:', letterObj);
                 canvasState.currentLetter = letterObj;
                 displayLetterInTarget(letterObj);
             } else {
-                console.log('No selected letter, setting new letter');
                 setNewLetter();
             }
         } else {
-            console.log('Setting new letter for level:', level);
             setNewLetter();
         }
     }
