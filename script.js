@@ -13,7 +13,9 @@ const canvasState = {
     lastX: 0,
     lastY: 0,
     initRetryCount: 0,
-    drawingTimeout: null
+    drawingTimeout: null,
+    lastDrawTime: null,
+    feedbackTimeout: null
 };
 
 // Make canvasState accessible to other files
@@ -241,11 +243,19 @@ function startDrawing(e) {
     
     canvasState.ctx.beginPath();
     canvasState.ctx.moveTo(x, y);
+    
+    // Start inactivity detection
+    canvasState.lastDrawTime = Date.now();
+    startInactivityCheck();
+}
 
-    // Start the auto-submit timeout
+function startInactivityCheck() {
+    // Clear any existing timeouts
     if (canvasState.drawingTimeout) {
         clearTimeout(canvasState.drawingTimeout);
     }
+    
+    // Set a single timeout for auto-submit
     canvasState.drawingTimeout = setTimeout(() => {
         if (canvasState.isDrawing) {
             stopDrawing();
@@ -255,9 +265,7 @@ function startDrawing(e) {
 }
 
 function draw(e) {
-    // Early return before any operations if not drawing
-    if (!canvasState.isDrawing) return;
-    if (!canvasState.ctx || !canvasState.canvas) return;
+    if (!canvasState.isDrawing || !canvasState.ctx || !canvasState.canvas) return;
     
     let x, y;
     const rect = canvasState.canvas.getBoundingClientRect();
@@ -276,16 +284,8 @@ function draw(e) {
     canvasState.ctx.beginPath();
     canvasState.ctx.moveTo(x, y);
 
-    // Reset the auto-submit timeout on each draw
-    if (canvasState.drawingTimeout) {
-        clearTimeout(canvasState.drawingTimeout);
-    }
-    canvasState.drawingTimeout = setTimeout(() => {
-        if (canvasState.isDrawing) {
-            stopDrawing();
-            checkDrawing();
-        }
-    }, 2000);
+    // Reset the auto-submit timeout
+    startInactivityCheck();
 }
 
 function stopDrawing() {
@@ -294,7 +294,6 @@ function stopDrawing() {
         canvasState.ctx.beginPath();
     }
     
-    // Clear the timeout if it exists
     if (canvasState.drawingTimeout) {
         clearTimeout(canvasState.drawingTimeout);
         canvasState.drawingTimeout = null;
@@ -302,7 +301,6 @@ function stopDrawing() {
 }
 
 function handleTouch(e) {
-    console.log('Touch Event Type:', e.type);
     e.preventDefault();
     
     if (e.type === 'touchstart') {
@@ -310,6 +308,9 @@ function handleTouch(e) {
         startDrawing(e);
     } else if (e.type === 'touchmove') {
         draw(e);
+    } else if (e.type === 'touchend' || e.type === 'touchcancel') {
+        document.body.classList.remove('drawing');
+        stopDrawing();
     }
 }
 
@@ -321,6 +322,53 @@ function clearCanvas() {
     }
 }
 
+function showFeedback(message, isSuccess = false) {
+    if (!canvasState.resultDiv) return;
+    
+    // Clear any existing feedback timeout
+    if (canvasState.feedbackTimeout) {
+        clearTimeout(canvasState.feedbackTimeout);
+    }
+    
+    // Add success/failure class for styling
+    canvasState.resultDiv.className = 'result ' + (isSuccess ? 'success' : 'failure');
+    canvasState.resultDiv.textContent = message;
+    
+    // Make sure the feedback is visible
+    canvasState.resultDiv.style.display = 'block';
+    canvasState.resultDiv.style.opacity = '1';
+}
+
+function calculateSimilarity(imageData) {
+    if (!imageData) return 0;
+    
+    let drawnPixels = 0;
+    let blackPixels = 0;
+    const data = imageData.data;
+    const totalPixels = imageData.width * imageData.height;
+    
+    for (let i = 0; i < data.length; i += 4) {
+        // Check if pixel is drawn (not completely transparent)
+        if (data[i + 3] > 0) {
+            drawnPixels++;
+            // Check if pixel is dark (closer to black)
+            if (data[i] < 128 && data[i + 1] < 128 && data[i + 2] < 128) {
+                blackPixels++;
+            }
+        }
+    }
+    
+    // Calculate coverage and darkness ratios
+    const coverageRatio = drawnPixels / totalPixels;
+    const darknessRatio = blackPixels / drawnPixels;
+    
+    // Combine the ratios with weights
+    const score = (coverageRatio * 0.4 + darknessRatio * 0.6) * 100;
+    
+    // Normalize the score to be between 0 and 100
+    return Math.min(Math.max(score * 2, 0), 100);
+}
+
 function checkDrawing() {
     if (!window.canvasState.canvas || !window.canvasState.resultDiv) {
         console.error('Canvas or result div not found');
@@ -329,7 +377,7 @@ function checkDrawing() {
 
     const drawingData = window.getDrawingData();
     if (!drawingData) {
-        window.canvasState.resultDiv.textContent = 'Please draw something first!';
+        showFeedback('Please draw something first!', false);
         return;
     }
 
@@ -337,61 +385,64 @@ function checkDrawing() {
     console.log('Similarity score:', similarity);
 
     let message;
-    if (similarity > 5) {  // Lowered threshold from 10 to 5
+    if (similarity > 30) {  // More lenient threshold
         message = `Great match! (${Math.round(similarity)}% match) Well done!`;
+        showFeedback(message, true);
+        
         // Add letter to learnt letters and update progress
         if (window.canvasState.currentLetter) {
             window.Storage.addLearntLetter(window.canvasState.currentLetter);
-            // Get current level from URL
             const urlParams = new URLSearchParams(window.location.search);
             const level = urlParams.get('level') || 'vowels';
             
-            // Handle consonant levels properly by using the full level name
             let progressLevel = level;
             if (level.startsWith('consonants_')) {
                 const group = level.split('_')[1];
                 progressLevel = `consonants_${group}`;
             }
             
-            // Update progress for the current level
-            console.log('Updating progress for level:', progressLevel);
             window.Storage.updateLevelProgress(progressLevel, 'write');
         }
+        
         // Set new letter after a delay
         setTimeout(() => {
             clearCanvas();
             setNewLetter();
-        }, 1500);
-    } else if (similarity > 2) {  // Lowered threshold from 5 to 2
+        }, 2000);
+    } else if (similarity > 15) {  // More lenient threshold
         message = `Close match (${Math.round(similarity)}% match) - keep practicing!`;
-        setTimeout(clearCanvas, 1500);
+        showFeedback(message, false);
+        setTimeout(clearCanvas, 2000);
     } else {
         message = `Try again (${Math.round(similarity)}% match) - keep practicing!`;
-        setTimeout(clearCanvas, 1500);
+        showFeedback(message, false);
+        setTimeout(clearCanvas, 2000);
     }
-
-    // Show feedback message
-    window.canvasState.resultDiv.textContent = message;
 }
 
-function calculateSimilarity(imageData) {
-    if (!imageData) return 0;
-    
-    let drawnPixels = 0;
-    const data = imageData.data;
-    const totalPixels = imageData.width * imageData.height;
-    
-    for (let i = 3; i < data.length; i += 4) {
-        if (data[i] > 0) {
-            drawnPixels++;
-        }
+// Add CSS styles for feedback
+const style = document.createElement('style');
+style.textContent = `
+    .result {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        text-align: center;
+        font-weight: bold;
+        transition: opacity 0.3s ease;
     }
-    
-    const percentageDrawn = (drawnPixels / totalPixels) * 100;
-    const normalizedScore = Math.min(Math.max((percentageDrawn - 0.5) * 10, 0), 100);
-    
-    return normalizedScore;
-}
+    .result.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .result.failure {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+`;
+document.head.appendChild(style);
 
 // Add debug logging for letters data
 document.addEventListener('DOMContentLoaded', () => {
@@ -479,7 +530,45 @@ function findLetterInAllCategories(targetLetter) {
     return null;
 }
 
-// Initialize
+// Add filter functionality
+function initializeFilters() {
+    const filterButtons = document.querySelectorAll('.filter-button');
+    const levels = document.querySelectorAll('.level');
+
+    // Function to filter levels
+    function filterLevels(mode) {
+        levels.forEach(level => {
+            const levelType = level.querySelector('.level-type');
+            if (!levelType) return;
+
+            const levelMode = levelType.textContent.trim().toLowerCase();
+            
+            if (mode === 'all' || levelMode.includes(mode)) {
+                level.classList.remove('hidden');
+            } else {
+                level.classList.add('hidden');
+            }
+        });
+    }
+
+    // Add click handlers to filter buttons
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Update active button
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            // Get selected mode and filter
+            const selectedMode = button.dataset.mode;
+            filterLevels(selectedMode);
+        });
+    });
+
+    // Initialize with 'all' filter
+    filterLevels('all');
+}
+
+// Update the init function to include filter initialization
 function init() {
     console.log('Initializing...');
     console.log('window.letters available:', !!window.letters);
@@ -500,9 +589,10 @@ function init() {
         return;
     }
     
-    // Initialize progress bars if we're on the main page
+    // Initialize progress bars and filters if we're on the main page
     if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/')) {
         updateProgressBars();
+        initializeFilters();
     }
     
     if (window.location.pathname.includes('practice.html')) {
@@ -746,6 +836,219 @@ function runTests() {
             window.letters = null;
             window.Storage = null;
             
+            console.groupEnd();
+        },
+
+        testProgressBarUpdates() {
+            console.group('Testing Progress Bar Updates');
+            
+            // Setup test environment
+            const levelDiv = document.createElement('div');
+            levelDiv.className = 'level';
+            levelDiv.innerHTML = `
+                <div class="level-header">
+                    <span class="level-type">Write</span>
+                </div>
+                <h2>Vowels</h2>
+                <div class="progress-bar">
+                    <div class="progress" style="width: 0%"></div>
+                </div>
+            `;
+            document.body.appendChild(levelDiv);
+
+            // Mock Storage functions
+            const originalStorage = window.Storage;
+            window.Storage = {
+                getLevelProgress: jest.fn().mockReturnValue(50),
+                updateLevelProgress: jest.fn(),
+                getLearntLetters: jest.fn().mockReturnValue([]),
+                addLearntLetter: jest.fn()
+            };
+
+            // Test progress bar update
+            updateProgressBars();
+            const progressBar = levelDiv.querySelector('.progress');
+            console.assert(
+                progressBar.style.width === '50%',
+                'Progress bar width should be updated to 50%'
+            );
+
+            // Test with different progress values
+            window.Storage.getLevelProgress.mockReturnValue(75);
+            updateProgressBars();
+            console.assert(
+                progressBar.style.width === '75%',
+                'Progress bar width should be updated to 75%'
+            );
+
+            // Test with 0% progress
+            window.Storage.getLevelProgress.mockReturnValue(0);
+            updateProgressBars();
+            console.assert(
+                progressBar.style.width === '0%',
+                'Progress bar width should be updated to 0%'
+            );
+
+            // Test with 100% progress
+            window.Storage.getLevelProgress.mockReturnValue(100);
+            updateProgressBars();
+            console.assert(
+                progressBar.style.width === '100%',
+                'Progress bar width should be updated to 100%'
+            );
+
+            // Cleanup
+            document.body.removeChild(levelDiv);
+            window.Storage = originalStorage;
+            console.groupEnd();
+        },
+
+        testProgressCalculation() {
+            console.group('Testing Progress Calculation');
+            
+            // Mock letters data
+            const originalLetters = window.letters;
+            window.letters = {
+                vowels: [
+                    { letter: 'ಅ' },
+                    { letter: 'ಆ' },
+                    { letter: 'ಇ' }
+                ],
+                consonants: {
+                    velar: [
+                        { letter: 'ಕ' },
+                        { letter: 'ಖ' }
+                    ]
+                }
+            };
+
+            // Mock Storage
+            const originalStorage = window.Storage;
+            const mockStorage = {
+                learntLetters: [],
+                getLearntLetters: function(mode) {
+                    return this.learntLetters;
+                },
+                addLearntLetter: function(letter) {
+                    this.learntLetters.push(letter);
+                    this.updateLevelProgress();
+                },
+                updateLevelProgress: jest.fn(),
+                getLevelProgress: jest.fn()
+            };
+            window.Storage = mockStorage;
+
+            // Test vowels progress
+            mockStorage.learntLetters = [{ letter: 'ಅ' }];
+            mockStorage.updateLevelProgress();
+            console.assert(
+                localStorage.getItem('vowels_write') === '33',
+                'Vowels progress should be 33% with 1/3 letters learned'
+            );
+
+            // Test consonants progress
+            mockStorage.learntLetters = [{ letter: 'ಕ' }];
+            mockStorage.updateLevelProgress();
+            console.assert(
+                localStorage.getItem('consonants_velar_write') === '50',
+                'Velar consonants progress should be 50% with 1/2 letters learned'
+            );
+
+            // Test multiple letters learned
+            mockStorage.learntLetters = [
+                { letter: 'ಅ' },
+                { letter: 'ಆ' },
+                { letter: 'ಇ' }
+            ];
+            mockStorage.updateLevelProgress();
+            console.assert(
+                localStorage.getItem('vowels_write') === '100',
+                'Vowels progress should be 100% with all letters learned'
+            );
+
+            // Test progress persistence
+            const progress = window.Storage.getLevelProgress('vowels', 'write');
+            console.assert(
+                progress === 100,
+                'Progress should be retrievable after being set'
+            );
+
+            // Cleanup
+            window.letters = originalLetters;
+            window.Storage = originalStorage;
+            localStorage.clear();
+            console.groupEnd();
+        },
+
+        testProgressBarVisualUpdate() {
+            console.group('Testing Progress Bar Visual Updates');
+            
+            // Setup test environment with multiple levels
+            const testContainer = document.createElement('div');
+            testContainer.innerHTML = `
+                <div class="level">
+                    <div class="level-header">
+                        <span class="level-type">Write</span>
+                    </div>
+                    <h2>Vowels</h2>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="level">
+                    <div class="level-header">
+                        <span class="level-type">Write</span>
+                    </div>
+                    <h2>Consonants - Velar</h2>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 0%"></div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(testContainer);
+
+            // Mock Storage
+            const originalStorage = window.Storage;
+            window.Storage = {
+                getLevelProgress: (levelType, mode) => {
+                    const progressMap = {
+                        'vowels': 60,
+                        'consonants_velar': 40
+                    };
+                    return progressMap[levelType] || 0;
+                }
+            };
+
+            // Test initial update
+            updateProgressBars();
+            
+            // Check vowels progress bar
+            const vowelsProgress = testContainer.querySelector('.level:first-child .progress');
+            console.assert(
+                vowelsProgress.style.width === '60%',
+                'Vowels progress bar should show 60%'
+            );
+
+            // Check consonants progress bar
+            const consonantsProgress = testContainer.querySelector('.level:last-child .progress');
+            console.assert(
+                consonantsProgress.style.width === '40%',
+                'Consonants progress bar should show 40%'
+            );
+
+            // Test progress text is removed if exists
+            const progressText = document.createElement('div');
+            progressText.className = 'progress-text';
+            vowelsProgress.appendChild(progressText);
+            updateProgressBars();
+            console.assert(
+                !vowelsProgress.querySelector('.progress-text'),
+                'Progress text should be removed after update'
+            );
+
+            // Cleanup
+            document.body.removeChild(testContainer);
+            window.Storage = originalStorage;
             console.groupEnd();
         }
     };

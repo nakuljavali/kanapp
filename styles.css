@@ -314,6 +314,7 @@ body.drawing {
     z-index: 1;
     max-width: 400px;
     box-shadow: 0 2px 8px rgba(242, 107, 77, 0.1);
+    transition: all 0.3s ease;
 }
 
 /* Space between boxes and connecting line */
@@ -771,4 +772,43 @@ body.drawing {
 
 .primary-button:hover {
     background: #e55c3e;
+}
+
+.filter-bar {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px auto;
+    padding: 8px;
+    max-width: 300px;
+    border-radius: 25px;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.filter-button {
+    padding: 6px 16px;
+    border: none;
+    border-radius: 20px;
+    background-color: transparent;
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-button:hover {
+    background-color: rgba(242, 107, 77, 0.08);
+    color: #F26B4D;
+}
+
+.filter-button.active {
+    background-color: rgba(242, 107, 77, 0.15);
+    color: #F26B4D;
+}
+
+/* Add transition for level visibility */
+.level.hidden {
+    display: none;
 }
