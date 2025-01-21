@@ -105,52 +105,64 @@ button:hover {
 /* Letter Display */
 .letter-display {
     text-align: center;
-    margin: 20px 0;
+    margin: 20px auto;
+    max-width: 600px;
+}
+
+.letter-display h2 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.letter-content {
+    background: white;
     padding: 20px;
-    background: #fff;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
 }
 
-#targetLetter {
-    margin: 20px auto;
-    max-width: 100%;
-    padding: 0 20px;
-}
-
-#targetLetter .letter {
-    font-size: clamp(48px, 15vw, 72px);
+.letter-content .letter {
+    font-size: 72px;
     color: #F26B4D;
     margin-bottom: 16px;
+    line-height: 1.2;
+    font-weight: bold;
 }
 
-#targetLetter .transliteration {
-    font-size: clamp(18px, 5vw, 24px);
+.letter-content .transliteration {
+    font-size: 24px;
     color: #666;
     margin-bottom: 12px;
+    font-weight: 500;
 }
 
-#targetLetter .pronunciation {
-    font-size: clamp(16px, 4vw, 20px);
+.letter-content .pronunciation {
+    font-size: 18px;
     color: #888;
     font-style: italic;
     margin-bottom: 12px;
 }
 
-#targetLetter .example {
-    font-size: clamp(16px, 4vw, 20px);
+.letter-content .example {
+    font-size: 18px;
     color: #333;
     margin-bottom: 12px;
     line-height: 1.4;
+    padding: 8px;
+    background: #f5f5f5;
+    border-radius: 6px;
 }
 
 /* Result Messages */
 #result {
     margin: 20px auto;
-    font-size: clamp(16px, 4vw, 18px);
-    font-weight: bold;
-    min-height: 27px;
-    padding: 0 20px;
+    padding: 16px;
+    text-align: center;
+    font-size: 18px;
+    color: #333;
+    min-height: 30px;
 }
 
 /* Navigation */
@@ -715,4 +727,48 @@ body.drawing {
 
 .hint-content div {
     margin: 8px 0;
+}
+
+/* Canvas container styles */
+.canvas-container {
+    margin: 20px auto;
+    text-align: center;
+}
+
+#drawingCanvas {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    margin-bottom: 16px;
+    touch-action: none;
+}
+
+/* Button styles */
+.canvas-container button {
+    margin: 0 8px;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.secondary-button {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    color: #666;
+}
+
+.secondary-button:hover {
+    background: #eee;
+}
+
+.primary-button {
+    background: #F26B4D;
+    border: none;
+    color: white;
+}
+
+.primary-button:hover {
+    background: #e55c3e;
 }

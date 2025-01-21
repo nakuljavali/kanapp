@@ -3,7 +3,8 @@ let learntLetters = JSON.parse(localStorage.getItem('learntLetters') || '[]');
 let lastPracticeDates = JSON.parse(localStorage.getItem('lastPracticeDates') || '{}');
 const RETRY_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
-import { initializeCanvas, clearCanvas, getTargetLetterData, getDrawingData } from './canvas.js';
+// Initialize canvas functions
+const { initializeCanvas, clearCanvas, getTargetLetterData, getDrawingData } = window;
 
 function getNextLetter() {
     const mode = new URLSearchParams(window.location.search).get('mode');
@@ -138,6 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showHint() {
+        const currentLetter = window.canvasState?.currentLetter;
         if (currentLetter) {
             const examples = currentLetter.examples || [];
             const examplesText = examples.length > 0 

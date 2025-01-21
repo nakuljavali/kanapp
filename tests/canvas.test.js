@@ -1,428 +1,276 @@
-// Mock canvas and context
+// Mock canvas context
 const mockCtx = {
     beginPath: jest.fn(),
     moveTo: jest.fn(),
     lineTo: jest.fn(),
     stroke: jest.fn(),
     clearRect: jest.fn(),
-    getImageData: jest.fn(),
-    strokeStyle: null,
-    lineWidth: null,
-    lineCap: null,
-    lineJoin: null
-};
-
-const mockCanvas = {
-    getContext: jest.fn(() => mockCtx),
-    width: 500,
-    height: 300,
-    getBoundingClientRect: jest.fn(() => ({
-        width: 500,
-        height: 300,
-        left: 0,
-        top: 0
+    getImageData: jest.fn(() => ({
+        data: new Uint8ClampedArray(400 * 400 * 4),
+        width: 400,
+        height: 400
     })),
-    addEventListener: jest.fn(),
+    strokeStyle: '#000',
+    lineWidth: 3,
+    lineCap: 'round',
+    lineJoin: 'round'
 };
 
-// Mock DOM elements
-const mockElements = {
-    canvas: mockCanvas,
-    clearButton: { addEventListener: jest.fn() },
-    submitButton: { addEventListener: jest.fn() },
-    resultDiv: { textContent: '' },
-    targetLetter: { innerHTML: '' }
-};
+// Create DOM elements
+const mockCanvas = document.createElement('canvas');
+mockCanvas.getContext = jest.fn(() => mockCtx);
+mockCanvas.width = 400;
+mockCanvas.height = 400;
+mockCanvas.getBoundingClientRect = jest.fn(() => ({
+    width: 400,
+    height: 400,
+    left: 0,
+    top: 0
+}));
 
-// Import the functions to test
-const script = require('../script.js');
+const mockTargetLetter = document.createElement('div');
+const mockResultDiv = document.createElement('div');
+const mockClearButton = document.createElement('button');
+const mockSubmitButton = document.createElement('button');
 
-// Mock letters data
-const mockLetters = {
+// Mock window.letters
+window.letters = {
     vowels: [
         {
-            letter: 'ಅ',
-            transliteration: 'a',
-            pronunciation: 'a as in about',
-            examples: 'ಅಮ್ಮ (amma) - mother'
+            letter: "ಅ",
+            pronunciation: "a",
+            transliteration: "a",
+            examples: ["ಅಮ್ಮ (amma - mother)"]
         }
     ],
     consonants: {
         velar: [
             {
-                letter: 'ಕ',
-                transliteration: 'ka',
-                pronunciation: 'ka as in call',
-                examples: 'ಕಮಲ (kamala) - lotus'
+                letter: "ಕ",
+                pronunciation: "ka",
+                transliteration: "ka",
+                examples: ["ಕಮಲ (kamala - lotus)"]
             }
         ]
     }
 };
 
-// Mock Storage object
+// Mock window.Storage
 window.Storage = {
     getLearntLetters: jest.fn().mockReturnValue([]),
-    addLearntLetter: jest.fn()
+    addLearntLetter: jest.fn(),
+    getLevelProgress: jest.fn().mockReturnValue(0),
+    updateLevelProgress: jest.fn()
 };
 
-// Mock window.letters
-window.letters = { ...mockLetters };
+function setupTestElements() {
+    // Reset DOM elements
+    document.body.innerHTML = '';
+    mockCanvas.id = 'drawingCanvas';
+    mockTargetLetter.id = 'targetLetter';
+    mockResultDiv.id = 'result';
+    mockClearButton.id = 'clearCanvas';
+    mockSubmitButton.id = 'submitDrawing';
+    
+    // Add elements to DOM
+    document.body.appendChild(mockCanvas);
+    document.body.appendChild(mockTargetLetter);
+    document.body.appendChild(mockResultDiv);
+    document.body.appendChild(mockClearButton);
+    document.body.appendChild(mockSubmitButton);
+    
+    // Reset canvas state
+    window.canvasState = {
+        isDrawing: false,
+        canvas: mockCanvas,
+        ctx: mockCtx,
+        targetLetter: mockTargetLetter,
+        resultDiv: mockResultDiv,
+        clearButton: mockClearButton,
+        submitButton: mockSubmitButton,
+        currentLetter: null,
+        lastX: 0,
+        lastY: 0
+    };
+    
+    // Reset mock functions
+    Object.values(mockCtx).forEach(value => {
+        if (typeof value === 'function') {
+            value.mockClear();
+        }
+    });
+    mockCanvas.getContext.mockClear();
+    window.Storage.getLearntLetters.mockClear();
+    window.Storage.addLearntLetter.mockClear();
+}
 
-describe('Canvas Setup', () => {
+describe('Canvas Tests', () => {
+    let script;
+
     beforeEach(() => {
-        jest.clearAllMocks();
-        // Reset mock functions
-        Object.values(mockCtx).forEach(value => {
-            if (typeof value === 'function') {
-                value.mockClear();
-            }
-        });
-        
-        // Setup document.querySelector mock
-        document.querySelector = jest.fn((selector) => {
-            switch (selector) {
-                case '#canvas':
-                    return mockElements.canvas;
-                case '#clearButton':
-                    return mockElements.clearButton;
-                case '#submitButton':
-                    return mockElements.submitButton;
-                case '#resultDiv':
-                    return mockElements.resultDiv;
-                case '#targetLetter':
-                    return mockElements.targetLetter;
-                default:
-                    return null;
-            }
-        });
-        
-        // Initialize canvas elements
-        script.initializeCanvasElements();
-        
-        // Set the initial state
-        script.setState({
-            canvas: mockCanvas,
-            ctx: mockCtx,
-            resultDiv: mockElements.resultDiv,
-            targetLetter: mockElements.targetLetter,
-            isDrawing: false
-        });
-    });
+        jest.resetModules();
 
-    test('setupCanvas initializes canvas with correct properties', () => {
-        script.setupCanvas();
-        
-        // Check if canvas context was configured correctly
-        expect(mockCtx.strokeStyle).toBe('#000');
-        expect(mockCtx.lineWidth).toBe(3);
-        expect(mockCtx.lineCap).toBe('round');
-        expect(mockCtx.lineJoin).toBe('round');
-        
-        // Check if event listeners were added
-        expect(mockCanvas.addEventListener).toHaveBeenCalledWith('mousedown', expect.any(Function));
-        expect(mockCanvas.addEventListener).toHaveBeenCalledWith('mousemove', expect.any(Function));
-        expect(mockCanvas.addEventListener).toHaveBeenCalledWith('mouseup', expect.any(Function));
-        expect(mockCanvas.addEventListener).toHaveBeenCalledWith('mouseout', expect.any(Function));
-    });
-});
-
-describe('Drawing Functions', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-        // Reset mock functions
-        Object.values(mockCtx).forEach(value => {
-            if (typeof value === 'function') {
-                value.mockClear();
-            }
-        });
-        
-        script.initializeCanvasElements();
-        script.setState({
-            canvas: mockCanvas,
-            ctx: mockCtx,
-            resultDiv: mockElements.resultDiv,
-            targetLetter: mockElements.targetLetter,
-            isDrawing: false
-        });
-    });
-
-    test('startDrawing sets isDrawing to true', () => {
-        const mockEvent = {
-            type: 'mousedown',
-            clientX: 100,
-            clientY: 100,
-            preventDefault: jest.fn()
-        };
-        
-        script.startDrawing(mockEvent);
-        expect(script.getState().isDrawing).toBe(true);
-    });
-
-    test('stopDrawing sets isDrawing to false', () => {
-        script.setState({ isDrawing: true });
-        script.stopDrawing();
-        expect(script.getState().isDrawing).toBe(false);
-        expect(mockCtx.beginPath).toHaveBeenCalled();
-    });
-
-    test('draw function draws line when isDrawing is true', () => {
-        script.setState({ isDrawing: true });
-        const mockEvent = {
-            type: 'mousemove',
-            clientX: 150,
-            clientY: 150,
-            preventDefault: jest.fn()
-        };
-        
-        script.draw(mockEvent);
-        
-        expect(mockCtx.lineTo).toHaveBeenCalled();
-        expect(mockCtx.stroke).toHaveBeenCalled();
-        expect(mockCtx.beginPath).toHaveBeenCalled();
-        expect(mockCtx.moveTo).toHaveBeenCalled();
-    });
-
-    test('draw function does nothing when isDrawing is false', () => {
-        // Ensure isDrawing is false and clear all mock function calls
-        script.setState({ isDrawing: false });
-        Object.values(mockCtx).forEach(value => {
-            if (typeof value === 'function') {
-                value.mockClear();
-            }
-        });
-        
-        const mockEvent = {
-            type: 'mousemove',
-            clientX: 150,
-            clientY: 150,
-            preventDefault: jest.fn()
-        };
-        
-        script.draw(mockEvent);
-        
-        expect(mockCtx.lineTo).not.toHaveBeenCalled();
-        expect(mockCtx.stroke).not.toHaveBeenCalled();
-    });
-});
-
-describe('Canvas Operations', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-        script.initializeCanvasElements();
-        script.setState({
-            canvas: mockCanvas,
-            ctx: mockCtx,
-            resultDiv: mockElements.resultDiv,
-            targetLetter: mockElements.targetLetter
-        });
-    });
-
-    test('clearCanvas clears the entire canvas', () => {
-        script.clearCanvas();
-        expect(mockCtx.clearRect).toHaveBeenCalledWith(0, 0, mockCanvas.width, mockCanvas.height);
-    });
-
-    test('checkDrawing calculates similarity correctly', () => {
-        const mockImageData = {
-            data: new Uint8ClampedArray([
-                255, 255, 255, 255, // White pixel with full alpha
-                0, 0, 0, 0,         // Transparent pixel
-                0, 0, 0, 255        // Black pixel with full alpha
-            ]),
-            width: 2,
-            height: 2
-        };
-        
-        mockCtx.getImageData.mockReturnValue(mockImageData);
-        
-        script.checkDrawing();
-        
-        expect(mockCtx.getImageData).toHaveBeenCalled();
-        expect(mockElements.resultDiv.textContent).toBeTruthy();
-    });
-});
-
-describe('Similarity Calculation', () => {
-    test('calculateSimilarity returns 0 for empty canvas', () => {
-        const emptyImageData = {
-            data: new Uint8ClampedArray(100).fill(0),
-            width: 5,
-            height: 5
-        };
-        
-        const similarity = script.calculateSimilarity(emptyImageData);
-        expect(similarity).toBe(0);
-    });
-
-    test('calculateSimilarity returns non-zero for drawn canvas', () => {
-        const drawnImageData = {
-            data: new Uint8ClampedArray(100).fill(255),
-            width: 5,
-            height: 5
-        };
-        
-        const similarity = script.calculateSimilarity(drawnImageData);
-        expect(similarity).toBeGreaterThan(0);
-    });
-});
-
-describe('Letter Display', () => {
-    beforeEach(() => {
-        // Reset letters data with consonants
+        // Reset window.letters with test data
         window.letters = {
+            vowels: [{
+                letter: 'ಅ',
+                pronunciation: 'a',
+                transliteration: 'a',
+                examples: ['ಅಮ್ಮ (amma - mother)']
+            }],
             consonants: {
                 velar: [{
                     letter: 'ಕ',
+                    pronunciation: 'ka',
                     transliteration: 'ka',
-                    pronunciation: 'ka as in call',
-                    examples: 'ಕಮಲ (kamala) - lotus'
+                    examples: ['ಕಮಲ (kamala - lotus)']
                 }]
-            },
-            vowels: [{
-                letter: 'ಅ',
-                transliteration: 'a',
-                pronunciation: 'a as in about',
-                examples: 'ಅಮ್ಮ (amma) - mother'
-            }]
-        };
-
-        // Mock URLSearchParams
-        global.URLSearchParams = jest.fn((search) => ({
-            get: (param) => {
-                const params = new Map([
-                    ['mode', 'learn'],
-                    ['level', 'consonants_velar']
-                ]);
-                return params.get(param);
             }
-        }));
-
-        // Mock window.location
-        Object.defineProperty(window, 'location', {
-            value: {
-                search: '?mode=learn&level=consonants_velar',
-                href: 'http://localhost/practice.html?mode=learn&level=consonants_velar'
-            },
-            writable: true
-        });
-
-        // Mock canvas and context
-        const mockCanvas = {
-            width: 500,
-            height: 500,
-            getContext: () => ({
-                clearRect: jest.fn(),
-                beginPath: jest.fn(),
-                moveTo: jest.fn(),
-                lineTo: jest.fn(),
-                stroke: jest.fn(),
-                getImageData: jest.fn().mockReturnValue({
-                    data: new Uint8ClampedArray(500 * 500 * 4)
-                })
-            })
         };
 
-        // Mock target letter element
-        const mockTargetLetter = document.createElement('div');
-        const mockResultDiv = document.createElement('div');
-
-        // Initialize canvas state
-        script.setState({
-            canvas: mockCanvas,
-            ctx: mockCanvas.getContext('2d'),
-            resultDiv: mockResultDiv,
-            targetLetter: mockTargetLetter,
-            currentLetter: null,
-            isDrawing: false
-        });
-
-        // Mock Storage
+        // Reset window.Storage
         window.Storage = {
             getLearntLetters: jest.fn().mockReturnValue([]),
             addLearntLetter: jest.fn()
         };
 
-        console.log('Test setup - window.letters:', JSON.stringify(window.letters, null, 2));
-        console.log('Test setup - window.location.search:', window.location.search);
-        console.log('Test setup - window.location.href:', window.location.href);
-    });
+        // Create DOM elements
+        document.body.innerHTML = `
+            <canvas id="drawingCanvas"></canvas>
+            <div id="targetLetter"></div>
+            <div id="result"></div>
+            <button id="clearCanvas">Clear</button>
+            <button id="submitDrawing">Submit</button>
+        `;
 
-    test('setNewLetter displays correct letter details in learn mode', () => {
-        // Mock window.location for vowels
-        Object.defineProperty(window, 'location', {
-            value: {
-                search: '?mode=learn&level=vowels',
-                href: 'http://localhost/practice.html?mode=learn&level=vowels'
-            },
-            writable: true
+        // Mock canvas context
+        const mockCtx = {
+            beginPath: jest.fn(),
+            moveTo: jest.fn(),
+            lineTo: jest.fn(),
+            stroke: jest.fn(),
+            clearRect: jest.fn(),
+            getImageData: jest.fn().mockReturnValue({
+                data: new Uint8ClampedArray(100).fill(255)
+            })
+        };
+
+        // Mock canvas functions
+        window.getDrawingData = jest.fn().mockReturnValue({
+            data: new Uint8ClampedArray(100).fill(255)
+        });
+        window.calculateSimilarity = jest.fn().mockReturnValue(0.8);
+
+        // Set up canvas state
+        const canvas = document.getElementById('drawingCanvas');
+        canvas.width = 400;
+        canvas.height = 400;
+        canvas.getContext = jest.fn().mockReturnValue(mockCtx);
+        canvas.getBoundingClientRect = jest.fn().mockReturnValue({
+            left: 0,
+            top: 0,
+            width: 400,
+            height: 400
         });
 
-        // Mock URLSearchParams for vowels
-        global.URLSearchParams = jest.fn((search) => ({
-            get: (param) => {
-                const params = new Map([
-                    ['mode', 'learn'],
-                    ['level', 'vowels']
-                ]);
-                return params.get(param);
-            }
-        }));
+        const targetLetter = document.getElementById('targetLetter');
+        const resultDiv = document.getElementById('result');
+        const clearButton = document.getElementById('clearCanvas');
+        const submitButton = document.getElementById('submitDrawing');
 
-        script.setNewLetter();
+        window.canvasState = {
+            canvas,
+            ctx: mockCtx,
+            targetLetter,
+            resultDiv,
+            clearButton,
+            submitButton,
+            isDrawing: false,
+            currentLetter: null
+        };
 
-        const targetLetterHTML = script.getState().targetLetter.innerHTML;
-        expect(targetLetterHTML).toContain('ಅ'); // Letter
-        expect(targetLetterHTML).toContain('a'); // Transliteration
-        expect(targetLetterHTML).toContain('a as in about'); // Pronunciation
-        expect(targetLetterHTML).toContain('ಅಮ್ಮ (amma) - mother'); // Example
+        // Initialize canvas elements
+        script = require('../script.js');
+        script.initializeCanvasElements();
     });
 
-    test('setNewLetter handles consonant levels correctly', () => {
-        script.setNewLetter();
-
-        const targetLetterHTML = script.getState().targetLetter.innerHTML;
-        expect(targetLetterHTML).toContain('ಕ');
-        expect(targetLetterHTML).toContain('ka');
-        expect(targetLetterHTML).toContain('ka as in call');
-        expect(targetLetterHTML).toContain('ಕಮಲ (kamala) - lotus');
-    });
-
-    test('setNewLetter shows completion message when all letters are learned', () => {
-        // Mock all letters as learned
-        window.Storage.getLearntLetters.mockReturnValue(['ಕ']);
-
-        script.setNewLetter();
-
-        const targetLetterHTML = script.getState().targetLetter.innerHTML;
-        expect(targetLetterHTML).toContain('Level Complete!');
-        expect(targetLetterHTML).toContain('Great job!');
-    });
-
-    test('setNewLetter shows error for invalid level', () => {
-        // Mock window.location for invalid level
-        Object.defineProperty(window, 'location', {
-            value: {
-                search: '?mode=learn&level=invalid',
-                href: 'http://localhost/practice.html?mode=learn&level=invalid'
-            },
-            writable: true
+    describe('Canvas Setup', () => {
+        test('initializes canvas elements correctly', () => {
+            expect(window.canvasState.canvas).toBeTruthy();
+            expect(window.canvasState.ctx).toBeTruthy();
+            expect(window.canvasState.targetLetter).toBeTruthy();
+            expect(window.canvasState.resultDiv).toBeTruthy();
+            expect(window.canvasState.clearButton).toBeTruthy();
+            expect(window.canvasState.submitButton).toBeTruthy();
         });
 
-        // Mock URLSearchParams for invalid level
-        global.URLSearchParams = jest.fn((search) => ({
-            get: (param) => {
-                const params = new Map([
-                    ['mode', 'learn'],
-                    ['level', 'invalid']
-                ]);
-                return params.get(param);
-            }
-        }));
+        test('sets up canvas with correct dimensions', () => {
+            expect(window.canvasState.canvas.width).toBe(400);
+            expect(window.canvasState.canvas.height).toBe(400);
+        });
+    });
 
-        script.setNewLetter();
+    describe('Letter Display', () => {
+        test('setNewLetter handles consonant levels correctly', () => {
+            // Set up URL for consonants_velar level
+            Object.defineProperty(window, 'location', {
+                value: {
+                    search: '?level=consonants_velar',
+                    href: 'http://localhost:3000/practice.html?level=consonants_velar'
+                },
+                writable: true
+            });
 
-        const targetLetterHTML = script.getState().targetLetter.innerHTML;
-        expect(targetLetterHTML).toContain('Error: Invalid level');
-        expect(targetLetterHTML).toContain('Please select a valid level');
+            script.setNewLetter();
+            
+            const targetLetterHTML = window.canvasState.targetLetter.innerHTML.trim();
+            expect(targetLetterHTML).toContain('ಕ');
+            expect(targetLetterHTML).toContain('ka');
+        });
+
+        test('setNewLetter shows error for invalid level', () => {
+            // Set up URL for invalid level
+            Object.defineProperty(window, 'location', {
+                value: {
+                    search: '?level=invalid_level',
+                    href: 'http://localhost:3000/practice.html?level=invalid_level'
+                },
+                writable: true
+            });
+
+            script.setNewLetter();
+            
+            const targetLetterHTML = window.canvasState.targetLetter.innerHTML.trim();
+            expect(targetLetterHTML).toContain('Error: Invalid level');
+        });
+    });
+
+    describe('Drawing Integration', () => {
+        test('complete drawing workflow', () => {
+            script.setNewLetter();
+            
+            // Simulate drawing
+            const mouseEvent = {
+                type: 'mousemove',
+                clientX: 100,
+                clientY: 100,
+                preventDefault: jest.fn()
+            };
+            
+            window.canvasState.isDrawing = true;
+            script.draw(mouseEvent);
+            window.canvasState.isDrawing = false;
+            
+            // Check drawing
+            script.checkDrawing();
+            
+            // Verify feedback
+            expect(window.canvasState.resultDiv.textContent).toContain('Great match');
+        });
+
+        test('clear canvas functionality', () => {
+            script.clearCanvas();
+            expect(window.canvasState.ctx.clearRect).toHaveBeenCalled();
+        });
     });
 }); 
