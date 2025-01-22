@@ -1223,7 +1223,7 @@ if (typeof module !== 'undefined' && module.exports) {
             Object.assign(canvasState, newState);
         }
     };
-}
+} 
 
 // Add getDrawingData function
 function getDrawingData() {

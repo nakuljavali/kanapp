@@ -35,4 +35,29 @@ window.URLSearchParams = jest.fn(() => ({
 }));
 
 // Mock setTimeout
-jest.useFakeTimers(); 
+jest.useFakeTimers();
+
+// Mock localStorage
+const localStorageMock = {
+    getItem: jest.fn(),
+    setItem: jest.fn(),
+    clear: jest.fn()
+};
+global.localStorage = localStorageMock;
+
+// Mock canvas
+HTMLCanvasElement.prototype.getContext = () => ({
+    beginPath: jest.fn(),
+    moveTo: jest.fn(),
+    lineTo: jest.fn(),
+    stroke: jest.fn(),
+    clearRect: jest.fn(),
+    getImageData: jest.fn().mockReturnValue({ data: new Uint8ClampedArray(100) })
+});
+
+// Mock window location
+delete window.location;
+window.location = {
+    href: '',
+    search: ''
+}; 
