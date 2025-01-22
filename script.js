@@ -1225,4 +1225,22 @@ if (typeof module !== 'undefined' && module.exports) {
             Object.assign(canvasState, newState);
         }
     };
-} 
+}
+
+// Add getDrawingData function
+function getDrawingData() {
+    if (!canvasState.ctx || !canvasState.canvas) {
+        console.error('Canvas context or element not available');
+        return null;
+    }
+    
+    try {
+        return canvasState.ctx.getImageData(0, 0, canvasState.canvas.width, canvasState.canvas.height);
+    } catch (error) {
+        console.error('Error getting canvas image data:', error);
+        return null;
+    }
+}
+
+// Make it available globally
+window.getDrawingData = getDrawingData; 

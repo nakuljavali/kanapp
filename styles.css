@@ -893,3 +893,110 @@ button:hover {
         padding: 10px 15px;
     }
 }
+
+/* Practice page container */
+.practice-container {
+    height: calc(100vh - 60px); /* Subtract top bar height */
+    margin-top: 60px; /* Account for fixed top bar */
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Letter display for practice page */
+.letter-display {
+    flex: 0 0 auto;
+    margin: 0 auto 16px;
+    max-width: 600px;
+}
+
+.letter-content {
+    padding: 12px;
+    margin-bottom: 16px;
+}
+
+.letter-content .letter {
+    font-size: clamp(48px, 10vw, 72px);
+    margin-bottom: 8px;
+}
+
+.letter-content .transliteration {
+    font-size: clamp(18px, 4vw, 24px);
+    margin-bottom: 8px;
+}
+
+.letter-content .pronunciation {
+    font-size: clamp(14px, 3vw, 18px);
+    margin-bottom: 8px;
+}
+
+/* Canvas container for practice page */
+.canvas-container {
+    flex: 1 1 auto;
+    position: relative;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0;
+    min-height: 0; /* Allow container to shrink */
+}
+
+#drawingCanvas {
+    max-height: 100%;
+    width: auto;
+    margin: 0 auto;
+    aspect-ratio: 1;
+    height: min(60vh, 400px); /* Limit height while maintaining aspect ratio */
+}
+
+/* Result area */
+#result {
+    flex: 0 0 auto;
+    margin: 8px 0;
+    min-height: 20px;
+    font-size: clamp(14px, 3vw, 18px);
+}
+
+/* Button container */
+.canvas-buttons {
+    position: relative; /* Change from sticky to relative */
+    bottom: auto;
+    flex: 0 0 auto;
+    padding: 8px;
+    margin-top: auto; /* Push to bottom of container */
+    background: transparent;
+    box-shadow: none;
+}
+
+.canvas-buttons button {
+    min-width: 80px;
+    padding: 10px 16px;
+    font-size: clamp(14px, 3vw, 16px);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .practice-container {
+        padding: 8px;
+    }
+
+    .letter-content {
+        padding: 8px;
+        margin-bottom: 8px;
+    }
+
+    #drawingCanvas {
+        height: min(50vh, 300px);
+    }
+
+    .canvas-buttons {
+        padding: 8px;
+    }
+
+    .canvas-buttons button {
+        padding: 8px 12px;
+    }
+}

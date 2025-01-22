@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learn Kannada Script - Practice</title>
+    <title>Practice - Learn Kannada Script</title>
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
     <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -11,66 +11,37 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-    <div class="menu-overlay" id="menuOverlay"></div>
-    
-    <div class="container">
-        <div class="top-bar">
-            <button class="icon-button menu-button" id="menuButton">
-                <span class="material-icons">menu</span>
-            </button>
-            <a href="index.html" class="logo">
-                <img src="assets/logo.svg" alt="KanApp" class="logo-image">
-            </a>
-        </div>
-
-        <div class="side-menu" id="sideMenu">
-            <div class="menu-header">
-                <a href="index.html" class="logo">
-                    <img src="assets/logo.svg" alt="KanApp" class="logo-image">
-                </a>
-                <button class="icon-button" id="closeMenu">
-                    <span class="material-icons">close</span>
-                </button>
-            </div>
-            <nav class="menu-items">
-                <a href="index.html">
-                    <span class="material-icons">home</span>
-                    Home
-                </a>
-                <a href="practice.html?mode=learn&level=vowels">
-                    <span class="material-icons">edit</span>
-                    Write Practice
-                </a>
-                <a href="read.html?level=vowels">
-                    <span class="material-icons">visibility</span>
-                    Read Practice
-                </a>
-                <a href="settings.html">
-                    <span class="material-icons">settings</span>
-                    Settings
-                </a>
-            </nav>
-        </div>
-
-        <!-- Rest of the page content -->
-        <div class="letter-display">
-            <h2>Draw this letter:</h2>
-            <div id="targetLetter" class="letter"></div>
-        </div>
-
-        <div class="canvas-container">
-            <canvas id="drawingCanvas" width="400" height="400"></canvas>
-            <button id="clearCanvas" class="secondary-button">Clear</button>
-            <button id="submitDrawing" class="primary-button">Submit</button>
-        </div>
-        <div id="result"></div>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <a href="index.html" class="back-button">
+            <span class="material-icons">arrow_back</span>
+        </a>
+        <a href="index.html" class="logo">
+            <img src="assets/logo.svg" alt="KanApp" class="logo-image">
+        </a>
     </div>
 
-    <!-- Scripts in correct dependency order -->
+    <!-- Practice Container -->
+    <div class="practice-container">
+        <!-- Letter Display -->
+        <div class="letter-display">
+            <div id="targetLetter" class="letter-content"></div>
+        </div>
+
+        <!-- Canvas Container -->
+        <div class="canvas-container">
+            <canvas id="drawingCanvas"></canvas>
+            <div id="result"></div>
+            <div class="canvas-buttons">
+                <button id="clearCanvas" class="secondary-button">Clear</button>
+                <button id="submitDrawing" class="primary-button">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script src="letters.js"></script>
     <script src="storage.js"></script>
-    <script src="menu.js"></script>
-    <script src="canvas.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
