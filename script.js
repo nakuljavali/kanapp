@@ -568,7 +568,91 @@ function initializeFilters() {
     filterLevels('all');
 }
 
-// Update the init function to include filter initialization
+// Add stage management functions
+function initializeStages() {
+    const stages = document.querySelectorAll('.stage');
+    
+    stages.forEach(stage => {
+        const header = stage.querySelector('.stage-header');
+        const content = stage.querySelector('.stage-content');
+        const toggleBtn = stage.querySelector('.toggle-stage');
+        const stageNumber = parseInt(stage.dataset.stage);
+        
+        // Add click handler for stage toggle
+        header.addEventListener('click', () => {
+            if (!stage.classList.contains('locked')) {
+                toggleStage(stage);
+            }
+        });
+        
+        // Initialize stage state
+        updateStageState(stage);
+    });
+}
+
+function toggleStage(stage) {
+    const content = stage.querySelector('.stage-content');
+    const toggleBtn = stage.querySelector('.toggle-stage');
+    const isExpanded = content.classList.contains('expanded');
+    
+    if (isExpanded) {
+        content.classList.remove('expanded');
+        toggleBtn.querySelector('.material-icons').style.transform = 'rotate(0deg)';
+    } else {
+        content.classList.add('expanded');
+        toggleBtn.querySelector('.material-icons').style.transform = 'rotate(180deg)';
+    }
+}
+
+function updateStageState(stage) {
+    const stageNumber = parseInt(stage.dataset.stage);
+    const toggleBtn = stage.querySelector('.toggle-stage');
+    const content = stage.querySelector('.stage-content');
+    const progressBar = stage.querySelector('.stage-progress .progress');
+    const progressText = stage.querySelector('.stage-progress .progress-text');
+    
+    // Calculate stage progress
+    const progress = calculateStageProgress(stageNumber);
+    
+    // Update progress bar and text
+    progressBar.style.width = `${progress}%`;
+    progressText.textContent = `${progress}% Complete`;
+    
+    // Handle stage accessibility
+    if (stageNumber === 1) {
+        // Stage 1 is always accessible
+        stage.classList.remove('locked');
+        toggleBtn.disabled = false;
+        content.classList.add('expanded');
+    } else {
+        // Check if previous stage is completed
+        const prevStageProgress = calculateStageProgress(stageNumber - 1);
+        const isLocked = prevStageProgress < 100;
+        
+        stage.classList.toggle('locked', isLocked);
+        toggleBtn.disabled = isLocked;
+        
+        if (!isLocked && progress === 100) {
+            stage.classList.add('completed');
+        }
+    }
+}
+
+function calculateStageProgress(stageNumber) {
+    const levels = document.querySelectorAll(`.stage[data-stage="${stageNumber}"] .level`);
+    if (!levels.length) return 0;
+    
+    let completedLevels = 0;
+    levels.forEach(level => {
+        const progressBar = level.querySelector('.progress');
+        const progress = parseInt(progressBar.style.width) || 0;
+        if (progress === 100) completedLevels++;
+    });
+    
+    return Math.round((completedLevels / levels.length) * 100);
+}
+
+// Update the init function to include stage initialization
 function init() {
     console.log('Initializing...');
     console.log('window.letters available:', !!window.letters);
@@ -593,6 +677,7 @@ function init() {
     if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/')) {
         updateProgressBars();
         initializeFilters();
+        initializeStages();  // Initialize stages
     }
     
     if (window.location.pathname.includes('practice.html')) {
@@ -1049,6 +1134,68 @@ function runTests() {
             // Cleanup
             document.body.removeChild(testContainer);
             window.Storage = originalStorage;
+            console.groupEnd();
+        },
+
+        testStageManagement() {
+            console.group('Testing Stage Management');
+            
+            // Setup test environment
+            const testContainer = document.createElement('div');
+            testContainer.innerHTML = `
+                <div class="stage" data-stage="1">
+                    <div class="stage-header">
+                        <h2>Stage 1</h2>
+                        <div class="stage-progress">
+                            <div class="progress-bar">
+                                <div class="progress" style="width: 0%"></div>
+                            </div>
+                            <span class="progress-text">0% Complete</span>
+                        </div>
+                        <button class="toggle-stage">
+                            <span class="material-icons">expand_more</span>
+                        </button>
+                    </div>
+                    <div class="stage-content">
+                        <div class="level">
+                            <div class="progress-bar">
+                                <div class="progress" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(testContainer);
+            
+            // Test stage progress calculation
+            const progress = calculateStageProgress(1);
+            console.assert(
+                progress === 100,
+                'Stage progress should be 100% when all levels are completed'
+            );
+            
+            // Test stage state update
+            const stage = testContainer.querySelector('.stage');
+            updateStageState(stage);
+            console.assert(
+                !stage.classList.contains('locked'),
+                'Stage 1 should never be locked'
+            );
+            console.assert(
+                stage.querySelector('.stage-progress .progress-text').textContent === '100% Complete',
+                'Progress text should show 100%'
+            );
+            
+            // Test stage toggle
+            const content = stage.querySelector('.stage-content');
+            toggleStage(stage);
+            console.assert(
+                content.classList.contains('expanded'),
+                'Stage content should be expanded after toggle'
+            );
+            
+            // Cleanup
+            document.body.removeChild(testContainer);
             console.groupEnd();
         }
     };

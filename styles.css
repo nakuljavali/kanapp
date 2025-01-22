@@ -63,15 +63,19 @@ h1 {
 
 /* Canvas and Drawing Area */
 .canvas-container {
+    margin: 20px auto;
+    text-align: center;
     position: relative;
-    margin: 20px 0;
+    padding-bottom: 80px;
 }
 
 #drawingCanvas {
-    border: 1px solid #ccc;
-    cursor: crosshair; /* Change cursor to indicate drawing */
-    width: 100%; /* Make it responsive */
-    height: auto; /* Maintain aspect ratio */
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    margin-bottom: 16px;
+    touch-action: none;
+    max-width: 100%;
 }
 
 /* Buttons */
@@ -275,14 +279,6 @@ button:hover {
     }
 }
 
-/* Prevent scrolling while drawing */
-body.drawing {
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
-    height: 100%;
-}
-
 /* Learning Tree Styles */
 .learning-tree {
     padding: 40px 20px;
@@ -291,75 +287,102 @@ body.drawing {
     margin: 0 auto;
 }
 
-/* Level connector line */
-.learning-tree::before {
-    content: '';
-    position: absolute;
-    top: 100px;
-    left: 50%;
-    height: calc(100% - 200px);
-    width: 2px;
-    background-color: #F26B4D;
-    transform: translateX(-50%);
-    z-index: 0;
-}
-
-.level {
-    background: white;
-    border: 2.5px solid #F26B4D;
-    border-radius: 16px;
-    padding: 25px;
-    margin: 50px auto;
-    position: relative;
-    z-index: 1;
-    max-width: 400px;
-    box-shadow: 0 2px 8px rgba(242, 107, 77, 0.1);
+/* Stage styles */
+.stage {
+    margin-bottom: 40px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: visible; /* Change from hidden to visible to allow content scrolling */
     transition: all 0.3s ease;
 }
 
-/* Space between boxes and connecting line */
-.level::before {
-    content: '';
-    position: absolute;
-    top: -25px;
-    left: 50%;
-    height: 15px;
-    width: 2px;
-    background-color: #F26B4D;
-    transform: translateX(-50%);
+.stage-header {
+    padding: 20px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(242, 107, 77, 0.1);
 }
 
-.level::after {
-    content: '';
-    position: absolute;
-    bottom: -25px;
-    left: 50%;
-    height: 15px;
-    width: 2px;
-    background-color: #F26B4D;
-    transform: translateX(-50%);
+.stage-header h2 {
+    margin: 0;
+    color: #F26B4D;
+    font-size: 1.5em;
 }
 
-/* Remove connectors for first and last boxes */
-.level:first-child::before {
-    display: none;
+.stage-progress {
+    flex: 1;
+    margin: 0 20px;
+    max-width: 200px;
 }
 
-.level:last-child::after {
-    display: none;
+.stage-progress .progress-bar {
+    height: 8px;
+    margin: 5px 0;
+}
+
+.stage-progress .progress-text {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.toggle-stage {
+    background: none;
+    border: none;
+    color: #F26B4D;
+    cursor: pointer;
+    padding: 8px;
+    transition: transform 0.3s ease;
+}
+
+.toggle-stage[disabled] {
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+.toggle-stage .material-icons {
+    transition: transform 0.3s ease;
+}
+
+.stage-content {
+    max-height: 0;
+    overflow-y: auto; /* Change to auto to enable vertical scrolling */
+    transition: max-height 0.5s ease;
+    background: #fff;
+}
+
+.stage-content.expanded {
+    max-height: 70vh; /* Set a reasonable max height that allows scrolling */
+    padding-bottom: 20px; /* Add padding to prevent content from touching the bottom */
+}
+
+/* Level box styles */
+.level {
+    background: white;
+    border: 2px solid #F26B4D;
+    border-radius: 16px;
+    padding: 20px;
+    margin: 20px auto;
+    width: calc(100% - 40px); /* Account for margins */
+    max-width: 500px;
+    box-shadow: 0 2px 8px rgba(242, 107, 77, 0.1);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    display: flex;
+    flex-direction: column;
 }
 
 .level-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid rgba(242, 107, 77, 0.2);
+    gap: 12px;
+    margin-bottom: 12px;
 }
 
 .level-number {
-    font-weight: bold;
+    font-weight: 600;
     color: #F26B4D;
     font-size: 1.1em;
 }
@@ -367,30 +390,40 @@ body.drawing {
 .level-type {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     color: #666;
     background: rgba(242, 107, 77, 0.1);
-    padding: 6px 12px;
+    padding: 4px 12px;
     border-radius: 20px;
     font-size: 0.9em;
 }
 
-.level h2 {
-    margin: 10px 0;
-    color: #333;
-    font-size: 1.4em;
+.level-type .material-icons {
+    font-size: 18px;
 }
 
+.level h2 {
+    margin: 8px 0 16px 0;
+    color: #333;
+    font-size: 1.3em;
+    text-align: center;
+}
+
+/* Start practice button styles */
 .start-button {
-    display: inline-block;
+    display: block;
+    width: 100%;
     background: #F26B4D;
     color: white;
-    padding: 12px 24px;
+    text-align: center;
+    padding: 12px 0;
     border-radius: 25px;
     text-decoration: none;
-    margin: 15px 0;
+    margin: 12px 0;
     transition: all 0.2s ease;
     font-weight: 500;
+    border: none;
+    cursor: pointer;
 }
 
 .start-button:hover {
@@ -399,13 +432,19 @@ body.drawing {
     box-shadow: 0 4px 12px rgba(242, 107, 77, 0.2);
 }
 
+.start-button[disabled] {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
 .progress-bar {
     background: rgba(242, 107, 77, 0.1);
     border-radius: 10px;
-    height: 10px;
-    margin: 15px 0;
+    height: 8px;
+    margin: 12px 0 4px 0;
     overflow: hidden;
-    position: relative;
 }
 
 .progress {
@@ -416,61 +455,141 @@ body.drawing {
     min-width: 0%;
 }
 
-.progress-text {
-    display: none;
+/* Stage content adjustments */
+.stage-content {
+    max-height: 0;
+    overflow-y: auto;
+    transition: max-height 0.5s ease;
+    background: #fff;
+    padding: 0 20px;
 }
 
-.level-button {
-    background: #F26B4D;
-    color: white;
-    padding: 12px 30px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+.stage-content.expanded {
+    max-height: 70vh;
+    padding: 20px;
 }
 
-.level-button:disabled {
+/* Disabled state for locked levels */
+.level.locked .start-button {
     background: #ccc;
     cursor: not-allowed;
+    pointer-events: none;
 }
 
-.level-button:hover:not(:disabled) {
+.level.locked {
+    opacity: 0.7;
+    border-color: #ccc;
+}
+
+/* Completed state */
+.level.completed {
+    border-color: #4CAF50;
+}
+
+.level.completed .level-number {
+    color: #4CAF50;
+}
+
+/* Mobile adjustments */
+@media (max-width: 600px) {
+    .level {
+        margin: 15px auto;
+        padding: 16px;
+        width: calc(100% - 30px);
+    }
+
+    .level-header {
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .level h2 {
+        font-size: 1.2em;
+        margin: 8px 0 12px 0;
+    }
+
+    .start-button {
+        padding: 10px 0;
+        font-size: 0.95em;
+    }
+}
+
+/* Add smooth scrollbar for better UX */
+.stage-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.stage-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.stage-content::-webkit-scrollbar-thumb {
+    background: #F26B4D;
+    border-radius: 4px;
+}
+
+.stage-content::-webkit-scrollbar-thumb:hover {
     background: #e55d3f;
 }
 
-.practice-section {
-    margin-top: 40px;
-    padding: 20px;
-    border-top: 2px solid #eee;
-    text-align: center;
+/* Stage transitions */
+.stage.completed .stage-header {
+    background: rgba(242, 107, 77, 0.05);
 }
 
-.practice-button {
-    background: #F4B95A;
-    color: white;
-    padding: 12px 30px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+.stage.completed .toggle-stage .material-icons {
+    transform: rotate(180deg);
 }
 
-.practice-button:hover {
-    background: #e5aa4b;
+.stage.locked .stage-content {
+    opacity: 0.5;
+    pointer-events: none;
 }
 
-/* Mobile Responsive */
-@media (max-width: 600px) {
-    .level-container {
-        padding: 15px;
+.stage.locked .level a {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .stage-header {
+        flex-direction: column;
+        text-align: center;
     }
-    
-    .level-button, .practice-button {
-        width: 100%;
-        padding: 15px;
+
+    .stage-progress {
+        margin: 15px 0;
+        max-width: 100%;
+    }
+
+    .toggle-stage {
+        margin-top: 10px;
+    }
+}
+
+/* Animation for stage expansion/collapse */
+@keyframes expandStage {
+    from {
+        max-height: 60px;
+        opacity: 0.8;
+    }
+    to {
+        max-height: 2000px;
+        opacity: 1;
+    }
+}
+
+@keyframes collapseStage {
+    from {
+        max-height: 2000px;
+        opacity: 1;
+    }
+    to {
+        max-height: 60px;
+        opacity: 0.8;
     }
 }
 
@@ -730,85 +849,47 @@ body.drawing {
     margin: 8px 0;
 }
 
-/* Canvas container styles */
-.canvas-container {
-    margin: 20px auto;
-    text-align: center;
-}
-
-#drawingCanvas {
-    border: 2px solid #ddd;
-    border-radius: 8px;
+/* Button container */
+.canvas-buttons {
+    position: sticky;
+    bottom: 20px;
+    left: 0;
+    right: 0;
     background: white;
-    margin-bottom: 16px;
-    touch-action: none;
+    padding: 10px;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
 }
 
-/* Button styles */
-.canvas-container button {
-    margin: 0 8px;
-    padding: 12px 24px;
-    border-radius: 6px;
+/* Adjust button styles */
+.canvas-buttons button {
+    min-width: 100px;
+    padding: 12px 20px;
+    border-radius: 25px;
     font-size: 16px;
     cursor: pointer;
     transition: all 0.2s;
-}
-
-.secondary-button {
-    background: #f5f5f5;
-    border: 1px solid #ddd;
-    color: #666;
-}
-
-.secondary-button:hover {
-    background: #eee;
-}
-
-.primary-button {
-    background: #F26B4D;
     border: none;
-    color: white;
 }
 
-.primary-button:hover {
-    background: #e55c3e;
-}
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .canvas-container {
+        padding-bottom: 100px;
+    }
 
-.filter-bar {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin: 20px auto;
-    padding: 8px;
-    max-width: 300px;
-    border-radius: 25px;
-    background-color: #fff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
+    .canvas-buttons {
+        padding: 15px 10px;
+        gap: 15px;
+    }
 
-.filter-button {
-    padding: 6px 16px;
-    border: none;
-    border-radius: 20px;
-    background-color: transparent;
-    color: #666;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.filter-button:hover {
-    background-color: rgba(242, 107, 77, 0.08);
-    color: #F26B4D;
-}
-
-.filter-button.active {
-    background-color: rgba(242, 107, 77, 0.15);
-    color: #F26B4D;
-}
-
-/* Add transition for level visibility */
-.level.hidden {
-    display: none;
+    .canvas-buttons button {
+        flex: 1;
+        max-width: 150px;
+        font-size: 14px;
+        padding: 10px 15px;
+    }
 }
