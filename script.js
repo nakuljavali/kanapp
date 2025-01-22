@@ -487,12 +487,10 @@ function displayLetterInTarget(letterObj) {
     const example = letterObj.examples?.[0] || '';
     
     const letterHTML = `
-        <div class="letter-content">
-            <div class="letter">${letter}</div>
-            <div class="transliteration">${transliteration}</div>
-            ${pronunciation ? `<div class="pronunciation">${pronunciation}</div>` : ''}
-            ${example ? `<div class="example">${example}</div>` : ''}
-        </div>
+        <div class="letter">${letter}</div>
+        <div class="transliteration">${transliteration}</div>
+        ${pronunciation ? `<div class="pronunciation">${pronunciation}</div>` : ''}
+        ${example ? `<div class="example">${example}</div>` : ''}
     `;
     
     console.log('Setting innerHTML to:', letterHTML);

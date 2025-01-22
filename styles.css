@@ -108,55 +108,42 @@ button:hover {
 
 /* Letter Display */
 .letter-display {
-    text-align: center;
-    margin: 20px auto;
+    flex: 0 0 auto;
+    margin: 0 auto;
+    width: calc(100% - 48px);
     max-width: 600px;
-}
-
-.letter-display h2 {
-    font-size: 24px;
-    color: #333;
-    margin-bottom: 20px;
-}
-
-.letter-content {
-    background: white;
-    padding: 20px;
+    padding: 24px;
+    text-align: center;
     border-radius: 12px;
+    background: white;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: 30px;
 }
 
-.letter-content .letter {
-    font-size: 72px;
+.letter-display .letter {
+    font-size: clamp(48px, 10vw, 72px);
+    margin-bottom: 8px;
     color: #F26B4D;
-    margin-bottom: 16px;
-    line-height: 1.2;
-    font-weight: bold;
 }
 
-.letter-content .transliteration {
-    font-size: 24px;
+.letter-display .transliteration {
+    font-size: clamp(18px, 4vw, 24px);
+    margin-bottom: 8px;
     color: #666;
-    margin-bottom: 12px;
-    font-weight: 500;
 }
 
-.letter-content .pronunciation {
-    font-size: 18px;
+.letter-display .pronunciation {
+    font-size: clamp(14px, 3vw, 18px);
+    margin-bottom: 8px;
     color: #888;
-    font-style: italic;
-    margin-bottom: 12px;
 }
 
-.letter-content .example {
-    font-size: 18px;
-    color: #333;
-    margin-bottom: 12px;
-    line-height: 1.4;
-    padding: 8px;
+.letter-display .example {
+    font-size: clamp(14px, 3vw, 18px);
+    color: #666;
     background: #f5f5f5;
+    padding: 8px;
     border-radius: 6px;
+    margin-top: 12px;
 }
 
 /* Result Messages */
@@ -896,40 +883,14 @@ button:hover {
 
 /* Practice page container */
 .practice-container {
-    height: calc(100vh - 60px); /* Subtract top bar height */
-    margin-top: 60px; /* Account for fixed top bar */
+    height: calc(100vh - 60px);
+    margin-top: 60px;
     display: flex;
     flex-direction: column;
-    padding: 16px;
+    padding: 24px;
     box-sizing: border-box;
-    overflow: hidden;
-}
-
-/* Letter display for practice page */
-.letter-display {
-    flex: 0 0 auto;
-    margin: 0 auto 16px;
-    max-width: 600px;
-}
-
-.letter-content {
-    padding: 12px;
-    margin-bottom: 16px;
-}
-
-.letter-content .letter {
-    font-size: clamp(48px, 10vw, 72px);
-    margin-bottom: 8px;
-}
-
-.letter-content .transliteration {
-    font-size: clamp(18px, 4vw, 24px);
-    margin-bottom: 8px;
-}
-
-.letter-content .pronunciation {
-    font-size: clamp(14px, 3vw, 18px);
-    margin-bottom: 8px;
+    overflow-y: auto;
+    gap: 12px;
 }
 
 /* Canvas container for practice page */
@@ -941,7 +902,10 @@ button:hover {
     flex-direction: column;
     justify-content: center;
     padding: 0;
-    min-height: 0; /* Allow container to shrink */
+    min-height: 0;
+    width: 100%;
+    max-width: 600px;
+    gap: 12px; /* Add consistent gap between canvas elements */
 }
 
 #drawingCanvas {
@@ -949,43 +913,50 @@ button:hover {
     width: auto;
     margin: 0 auto;
     aspect-ratio: 1;
-    height: min(60vh, 400px); /* Limit height while maintaining aspect ratio */
+    height: min(60vh, 400px);
+    border: 2px solid #ddd;
+    border-radius: 8px;
 }
 
 /* Result area */
 #result {
     flex: 0 0 auto;
-    margin: 8px 0;
+    margin: 0;
     min-height: 20px;
     font-size: clamp(14px, 3vw, 18px);
 }
 
 /* Button container */
 .canvas-buttons {
-    position: relative; /* Change from sticky to relative */
+    position: relative;
     bottom: auto;
     flex: 0 0 auto;
-    padding: 8px;
-    margin-top: auto; /* Push to bottom of container */
+    padding: 0;
+    margin-top: 8px;
     background: transparent;
     box-shadow: none;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
 }
 
 .canvas-buttons button {
     min-width: 80px;
     padding: 10px 16px;
     font-size: clamp(14px, 3vw, 16px);
+    border-radius: 25px;
 }
 
 /* Mobile optimizations */
 @media (max-width: 768px) {
     .practice-container {
-        padding: 8px;
+        padding: 16px;
+        gap: 8px;
     }
 
-    .letter-content {
-        padding: 8px;
-        margin-bottom: 8px;
+    .letter-display {
+        width: calc(100% - 32px);
+        padding: 16px;
     }
 
     #drawingCanvas {
@@ -993,7 +964,7 @@ button:hover {
     }
 
     .canvas-buttons {
-        padding: 8px;
+        margin-top: 4px;
     }
 
     .canvas-buttons button {
