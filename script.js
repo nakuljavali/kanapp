@@ -389,25 +389,40 @@ function checkDrawing() {
         message = `Great match! (${Math.round(similarity)}% match) Well done!`;
         showFeedback(message, true);
         
-        // Add letter to learnt letters and update progress
-        if (window.canvasState.currentLetter) {
-            window.Storage.addLearntLetter(window.canvasState.currentLetter);
-            const urlParams = new URLSearchParams(window.location.search);
-            const level = urlParams.get('level') || 'vowels';
-            
-            let progressLevel = level;
-            if (level.startsWith('consonants_')) {
-                const group = level.split('_')[1];
-                progressLevel = `consonants_${group}`;
-            }
-            
-            window.Storage.updateLevelProgress(progressLevel, 'write');
+        // Update last reviewed time for the current letter in review mode
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode');
+        if (mode === 'review' && window.canvasState.currentLetter) {
+            const learntLetters = window.Storage.getLearntLetters();
+            const updatedLetters = learntLetters.map(letter => {
+                if (letter.letter === window.canvasState.currentLetter.letter) {
+                    return { ...letter, lastReviewed: Date.now() };
+                }
+                return letter;
+            });
+            window.Storage.setLearntLetters(updatedLetters);
         }
         
-        // Set new letter after a delay
+        // Set next letter after a delay
         setTimeout(() => {
             clearCanvas();
-            setNewLetter();
+            if (mode === 'review') {
+                const reviewLetters = JSON.parse(localStorage.getItem('reviewLetters') || '[]');
+                if (reviewLetters.length > 0) {
+                    const nextLetter = reviewLetters[0];
+                    canvasState.currentLetter = nextLetter;
+                    displayLetterInTarget(nextLetter);
+                    
+                    // Remove the current letter from the review list
+                    reviewLetters.shift();
+                    localStorage.setItem('reviewLetters', JSON.stringify(reviewLetters));
+                } else {
+                    // No more letters to review, go back to index
+                    window.location.href = 'index.html';
+                }
+            } else {
+                setNewLetter();
+            }
         }, 2000);
     } else if (similarity > 15) {  // More lenient threshold
         message = `Close match (${Math.round(similarity)}% match) - keep practicing!`;
@@ -679,7 +694,8 @@ function init() {
     if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/')) {
         updateProgressBars();
         initializeFilters();
-        initializeStages();  // Initialize stages
+        initializeStages();
+        updateDailyReview(); // Add this line to initialize daily review
     }
     
     if (window.location.pathname.includes('practice.html')) {
@@ -693,11 +709,23 @@ function init() {
         
         const urlParams = new URLSearchParams(window.location.search);
         const mode = urlParams.get('mode');
-        const level = urlParams.get('level') || 'vowels';
         
-        console.log('Mode:', mode, 'Level:', level);
-        
-        if (mode === 'free') {
+        if (mode === 'review') {
+            // Handle review mode
+            const reviewLetters = JSON.parse(localStorage.getItem('reviewLetters') || '[]');
+            if (reviewLetters.length > 0) {
+                const currentLetter = reviewLetters[0];
+                canvasState.currentLetter = currentLetter;
+                displayLetterInTarget(currentLetter);
+                
+                // Remove the current letter from the review list
+                reviewLetters.shift();
+                localStorage.setItem('reviewLetters', JSON.stringify(reviewLetters));
+            } else {
+                // No more letters to review, go back to index
+                window.location.href = 'index.html';
+            }
+        } else if (mode === 'free') {
             const selectedLetter = localStorage.getItem('selectedLetter');
             if (selectedLetter && selectedLetter.trim()) {
                 let letterObj = findLetterInAllCategories(selectedLetter);
@@ -1246,3 +1274,73 @@ function getDrawingData() {
 
 // Make it available globally
 window.getDrawingData = getDrawingData; 
+
+// Add these functions after the existing code
+
+function getReviewDueLetters() {
+    const learntLetters = window.Storage.getLearntLetters() || [];
+    const now = Date.now();
+    const ONE_DAY = 24 * 60 * 60 * 1000;
+    
+    // Sort letters by last review date (oldest first)
+    const sortedLetters = learntLetters
+        .filter(letter => letter.lastReviewed) // Only include letters that have been reviewed
+        .sort((a, b) => a.lastReviewed - b.lastReviewed);
+    
+    // Get letters that haven't been reviewed in the last day
+    return sortedLetters.filter(letter => {
+        const daysSinceReview = (now - letter.lastReviewed) / ONE_DAY;
+        return daysSinceReview >= 1;
+    }).slice(0, 5); // Get up to 5 letters for review
+}
+
+function updateDailyReview() {
+    const reviewSection = document.querySelector('.daily-review');
+    const reviewCards = document.querySelector('.review-cards');
+    if (!reviewCards || !reviewSection) return;
+    
+    const dueLetters = getReviewDueLetters();
+    console.log('Letters due for review:', dueLetters);
+    
+    if (dueLetters.length === 0) {
+        reviewSection.classList.add('empty');
+        reviewCards.innerHTML = '<p>No letters due for review</p>';
+        document.getElementById('startReview')?.setAttribute('disabled', 'true');
+        return;
+    }
+    
+    // Remove empty class if there are letters to review
+    reviewSection.classList.remove('empty');
+    
+    // Create cards for each letter
+    reviewCards.innerHTML = dueLetters.map(letter => {
+        const lastReviewed = new Date(letter.lastReviewed);
+        const daysAgo = Math.floor((Date.now() - lastReviewed) / (24 * 60 * 60 * 1000));
+        
+        return `
+            <div class="review-card" data-letter="${letter.letter}">
+                <div class="letter">${letter.letter}</div>
+                <div class="transliteration">${letter.transliteration || ''}</div>
+                <div class="last-reviewed">Last reviewed ${daysAgo} days ago</div>
+            </div>
+        `;
+    }).join('');
+    
+    // Enable the start review button
+    const startButton = document.getElementById('startReview');
+    if (startButton) {
+        startButton.removeAttribute('disabled');
+        startButton.onclick = startDailyReview;
+    }
+}
+
+function startDailyReview() {
+    const dueLetters = getReviewDueLetters();
+    if (dueLetters.length === 0) return;
+    
+    // Store the letters to review in localStorage
+    localStorage.setItem('reviewLetters', JSON.stringify(dueLetters));
+    
+    // Redirect to practice page in review mode
+    window.location.href = 'practice.html?mode=review';
+} 

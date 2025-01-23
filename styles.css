@@ -1012,3 +1012,127 @@ button:hover {
         padding: 8px 12px;
     }
 }
+
+/* Daily Review Section */
+.daily-review {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    margin: 20px auto;
+    max-width: 800px;
+    text-align: center;
+}
+
+.daily-review.empty {
+    padding: 12px;
+    margin: 10px auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.daily-review.empty h2 {
+    margin: 0;
+    font-size: 1rem;
+    color: #666;
+}
+
+.daily-review.empty #startReview {
+    display: none;
+}
+
+.daily-review.empty .review-cards {
+    margin: 0;
+    padding: 0;
+    flex: 1;
+}
+
+.daily-review.empty .review-cards p {
+    margin: 0;
+    color: #888;
+    font-size: 0.9rem;
+    text-align: right;
+}
+
+.daily-review h2 {
+    color: #F26B4D;
+    margin-bottom: 20px;
+}
+
+.review-cards {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding: 16px 0;
+    margin-bottom: 20px;
+    scroll-snap-type: x mandatory;
+}
+
+.review-card {
+    flex: 0 0 auto;
+    width: 200px;
+    background: #FFF1EC;
+    border: 2px solid #F26B4D;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    scroll-snap-align: start;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-5px);
+}
+
+.review-card .letter {
+    font-size: 48px;
+    color: #F26B4D;
+    margin-bottom: 10px;
+}
+
+.review-card .transliteration {
+    font-size: 18px;
+    color: #666;
+}
+
+.review-card .last-reviewed {
+    font-size: 14px;
+    color: #888;
+    margin-top: 10px;
+}
+
+#startReview {
+    background: #F26B4D;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+#startReview:hover {
+    background: #e55d3f;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .daily-review {
+        margin: 16px;
+        padding: 16px;
+    }
+
+    .review-cards {
+        gap: 12px;
+        padding: 12px 0;
+    }
+
+    .review-card {
+        width: 160px;
+        padding: 16px;
+    }
+}
