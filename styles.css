@@ -13,6 +13,7 @@ body {
     text-align: center;
     position: relative;
     min-height: 100vh;
+    padding-top: 100px; /* Increase container top padding */
 }
 
 h1 {
@@ -268,7 +269,7 @@ button:hover {
 
 /* Learning Tree Styles */
 .learning-tree {
-    padding: 40px 20px;
+    padding-top: 20px;
     position: relative;
     max-width: 600px;
     margin: 0 auto;
@@ -593,6 +594,46 @@ button:hover {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     z-index: 997;
     height: 60px;
+}
+
+/* Main container adjustments */
+.container {
+    padding-top: 120px; /* Increased padding to account for fixed top bar */
+    min-height: calc(100vh - 60px);
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/* Filter bar positioning */
+.filter-bar {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin: 20px 0 40px 0;
+    padding: 0;
+}
+
+.filter-button {
+    padding: 0.5rem 1.5rem;
+    border: 2px solid #F26B4D;
+    border-radius: 20px;
+    background: transparent;
+    color: #F26B4D;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-button.active {
+    background: #F26B4D;
+    color: white;
+}
+
+.filter-button:hover {
+    background: #F26B4D;
+    color: white;
 }
 
 /* Menu button styles */

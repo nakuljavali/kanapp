@@ -539,12 +539,12 @@ function initializeFilters() {
             const levelType = level.querySelector('.level-type');
             if (!levelType) return;
 
-            const levelMode = levelType.textContent.trim().toLowerCase();
+            const levelMode = levelType.textContent.toLowerCase();
             
-            if (mode === 'all' || levelMode.includes(mode)) {
-                level.classList.remove('hidden');
+            if (mode === 'all' || levelMode.includes(mode.toLowerCase())) {
+                level.style.display = '';
             } else {
-                level.classList.add('hidden');
+                level.style.display = 'none';
             }
         });
     }
@@ -557,13 +557,17 @@ function initializeFilters() {
             button.classList.add('active');
 
             // Get selected mode and filter
-            const selectedMode = button.dataset.mode;
+            const selectedMode = button.getAttribute('data-mode');
             filterLevels(selectedMode);
         });
     });
 
     // Initialize with 'all' filter
-    filterLevels('all');
+    const allButton = document.querySelector('.filter-button[data-mode="all"]');
+    if (allButton) {
+        allButton.classList.add('active');
+        filterLevels('all');
+    }
 }
 
 // Add stage management functions
