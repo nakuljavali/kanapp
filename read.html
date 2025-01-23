@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learn Kannada Script - Reading Practice</title>
+    <title>Read Practice - Learn Kannada Script</title>
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
     <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -52,35 +52,14 @@
             </nav>
         </div>
 
-        <div class="read-practice">
-            <div class="letter-display">
-                <h2>Read this letter:</h2>
-                <div id="targetLetter" class="letter"></div>
-            </div>
+        <div class="practice-container">
+            <div id="targetLetter" class="letter-display"></div>
             
-            <div class="answer-section">
-                <input type="text" 
-                       id="answerInput" 
-                       placeholder="Type how to read this letter..." 
-                       autocomplete="off"
-                       autocapitalize="none">
-                <button id="submitAnswer" class="primary-button">
-                    <span class="material-icons">check</span>
-                    Check
-                </button>
-            </div>
-
-            <div id="feedback" class="feedback"></div>
-
-            <div class="button-container">
-                <button id="showHint" class="secondary-button">
-                    <span class="material-icons">lightbulb</span>
-                    Hint
-                </button>
-                <button id="nextLetter" class="primary-button" style="display: none;">
-                    <span class="material-icons">arrow_forward</span>
-                    Next
-                </button>
+            <div class="multiple-choice-container">
+                <div class="options-grid">
+                    <!-- Options will be dynamically inserted here -->
+                </div>
+                <div id="result" class="result-message"></div>
             </div>
         </div>
     </div>
