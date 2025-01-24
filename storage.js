@@ -2,6 +2,7 @@
 const STORAGE_KEYS = {
     LEARNT_LETTERS: 'learntLetters',
     LEARNT_LETTERS_READ: 'learntLettersRead',  // New key for read mode
+    LETTER_STATS: 'letterStats',  // New key for tracking letter statistics
     LEVEL_PROGRESS: {
         VOWELS_WRITE: 'vowels_write',
         VOWELS_READ: 'vowels_read',
@@ -45,6 +46,70 @@ window.Storage = {
             localStorage.setItem(key, JSON.stringify(learntLetters));
             this.updateLevelProgress();
         }
+    },
+
+    // Get letter statistics
+    getLetterStats: function() {
+        return JSON.parse(localStorage.getItem(STORAGE_KEYS.LETTER_STATS) || '{}');
+    },
+
+    // Update letter statistics
+    updateLetterStats: function(letter, isCorrect, mode = 'write') {
+        const stats = this.getLetterStats();
+        if (!stats[letter]) {
+            stats[letter] = {
+                read: { correct: 0, total: 0 },
+                write: { correct: 0, total: 0 }
+            };
+        }
+        
+        stats[letter][mode].total++;
+        if (isCorrect) {
+            stats[letter][mode].correct++;
+        }
+        
+        localStorage.setItem(STORAGE_KEYS.LETTER_STATS, JSON.stringify(stats));
+    },
+
+    // Get correctness percentage for a letter
+    getLetterCorrectness: function(letter, mode = 'write') {
+        const stats = this.getLetterStats();
+        if (!stats[letter] || !stats[letter][mode]) return 0;
+        
+        const { correct, total } = stats[letter][mode];
+        return total === 0 ? 0 : Math.round((correct / total) * 100);
+    },
+
+    // Get letters for daily review
+    getDailyReviewLetters: function() {
+        const stats = this.getLetterStats();
+        const learntLettersWrite = this.getLearntLetters('write');
+        const learntLettersRead = this.getLearntLetters('read');
+        
+        // Combine learnt letters from both modes
+        const allLearntLetters = [...new Set([
+            ...learntLettersWrite.map(l => typeof l === 'string' ? l : l.letter),
+            ...learntLettersRead.map(l => typeof l === 'string' ? l : l.letter)
+        ])];
+        
+        if (allLearntLetters.length === 0) return [];
+        
+        // Calculate average correctness for each letter
+        const letterScores = allLearntLetters.map(letter => {
+            const writeCorrectness = this.getLetterCorrectness(letter, 'write');
+            const readCorrectness = this.getLetterCorrectness(letter, 'read');
+            const avgCorrectness = (writeCorrectness + readCorrectness) / 2;
+            
+            return {
+                letter,
+                correctness: avgCorrectness
+            };
+        });
+        
+        // Sort by correctness (lowest first) and take up to 20 letters
+        return letterScores
+            .sort((a, b) => a.correctness - b.correctness)
+            .slice(0, Math.min(20, Math.max(5, letterScores.length)));
     },
 
     // Calculate and update progress for all levels
@@ -119,6 +184,7 @@ window.Storage = {
     clearAllData: function() {
         localStorage.removeItem(STORAGE_KEYS.LEARNT_LETTERS);
         localStorage.removeItem(STORAGE_KEYS.LEARNT_LETTERS_READ);
+        localStorage.removeItem(STORAGE_KEYS.LETTER_STATS);
         Object.values(STORAGE_KEYS.LEVEL_PROGRESS).forEach(key => {
             localStorage.removeItem(key);
         });

@@ -8,26 +8,38 @@ const readState = {
 };
 
 function init() {
-    console.log('Initializing read mode...');
+    // Get mode from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode');
     
-    if (!window.letters || !window.Storage) {
-        if (readState.initRetryCount >= 50) {
-            console.error('Failed to load dependencies after 50 retries');
-            return;
+    if (mode === 'review') {
+        // Handle review mode
+        const reviewLetters = JSON.parse(localStorage.getItem('reviewLetters') || '[]');
+        if (reviewLetters.length > 0) {
+            const currentLetter = reviewLetters[0];
+            readState.currentLetter = currentLetter;
+            displayLetterInTarget(currentLetter);
+            
+            // Remove the current letter from the review list
+            reviewLetters.shift();
+            localStorage.setItem('reviewLetters', JSON.stringify(reviewLetters));
+            
+            // Generate options
+            generateOptions(currentLetter, window.letters.vowels.concat(window.letters.consonants));
+        } else {
+            // No more letters to review, go back to index
+            window.location.href = 'index.html';
         }
-        console.error('Required dependencies not loaded. Retrying in 100ms...');
-        readState.initRetryCount++;
-        setTimeout(init, 100);
-        return;
+    } else {
+        setNewLetter();
     }
-    
-    setNewLetter();
 }
 
 function setNewLetter() {
     // Get level from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const level = urlParams.get('level') || 'vowels';
+    const mode = urlParams.get('mode');
     
     let availableLetters = [];
     
@@ -54,8 +66,15 @@ function setNewLetter() {
     );
     
     if (unlearntLetters.length === 0) {
-        document.getElementById('targetLetter').innerHTML = 
-            '<div class="completion">🎉 All letters learned! Try the next level!</div>';
+        if (mode === 'review') {
+            document.getElementById('targetLetter').innerHTML = '<div class="completion">Daily Practice done!</div>';
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1500);
+        } else {
+            document.getElementById('targetLetter').innerHTML = 
+                '<div class="completion">🎉 All letters learned! Try the next level!</div>';
+        }
         return;
     }
     
@@ -113,58 +132,124 @@ function displayOptions() {
     // Add click handlers
     const buttons = optionsGrid.querySelectorAll('.option-button');
     buttons.forEach(button => {
-        button.addEventListener('click', handleOptionClick);
+        button.addEventListener('click', () => handleOptionClick(button));
     });
 }
 
-function handleOptionClick(event) {
+function handleOptionClick(button) {
     if (!readState.canAnswer) return;
+    readState.canAnswer = false;
     
-    const selectedLetter = event.currentTarget.dataset.letter;
-    const isCorrect = selectedLetter === readState.currentLetter.letter;
+    const selectedLetter = button.dataset.letter;
+    const selectedOption = readState.options.find(opt => opt.letter === selectedLetter);
+    const isCorrect = selectedOption.transliteration === readState.currentLetter.transliteration;
     
-    // Show result
-    const resultDiv = document.getElementById('result');
+    // Update statistics
+    window.Storage.updateLetterStats(readState.currentLetter.letter, isCorrect, 'read');
+    
     if (isCorrect) {
-        event.currentTarget.classList.add('correct');
+        button.classList.add('correct');
+        document.getElementById('result').textContent = 'Correct! Well done!';
+        document.getElementById('result').className = 'result-message success';
         
+        // Add to learnt letters only on first correct attempt
         if (readState.isFirstAttempt) {
-            // Only mark as learned and update progress if it's the first attempt
             window.Storage.addLearntLetter(readState.currentLetter, 'read');
-            
-            // Update progress
-            const urlParams = new URLSearchParams(window.location.search);
-            const level = urlParams.get('level') || 'vowels';
-            window.Storage.updateLevelProgress(level, 'read');
-            
-            resultDiv.innerHTML = 'Correct on first try! Well done! 🎉';
-        } else {
-            resultDiv.innerHTML = 'Correct! Keep practicing! 👍';
         }
-        resultDiv.className = 'result-message success';
         
-        // Disable further answers
-        readState.canAnswer = false;
-        
-        // Set next letter after delay
+        // Set timeout to show next letter
         setTimeout(() => {
-            readState.canAnswer = true;
             setNewLetter();
-            resultDiv.innerHTML = '';
-            resultDiv.className = 'result-message';
+            readState.canAnswer = true;
+            readState.isFirstAttempt = true;
         }, 1500);
     } else {
-        event.currentTarget.classList.add('incorrect');
-        resultDiv.innerHTML = 'Try again!';
-        resultDiv.className = 'result-message error';
-        readState.isFirstAttempt = false;  // Mark as not first attempt after first mistake
+        button.classList.add('incorrect');
+        document.getElementById('result').textContent = 'Try again!';
+        document.getElementById('result').className = 'result-message error';
+        readState.isFirstAttempt = false;
         
-        // Enable answering again immediately
+        // Re-enable answering after a short delay
         setTimeout(() => {
-            event.currentTarget.classList.remove('incorrect');
-            resultDiv.innerHTML = '';
-            resultDiv.className = 'result-message';
-        }, 500);
+            readState.canAnswer = true;
+            button.classList.remove('incorrect');
+            document.getElementById('result').textContent = '';
+            document.getElementById('result').className = 'result-message';
+        }, 1000);
+    }
+}
+
+function checkAnswer() {
+    const selectedOption = document.querySelector('input[name="answer"]:checked');
+    if (!selectedOption) {
+        showFeedback('Please select an answer', false);
+        return;
+    }
+
+    const isCorrect = selectedOption.value === readState.currentLetter.transliteration;
+    showFeedback(isCorrect ? 'Correct!' : 'Try again!', isCorrect);
+
+    // Update statistics
+    window.Storage.updateLetterStats(readState.currentLetter.letter, isCorrect, 'read');
+
+    if (isCorrect) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode');
+        
+        if (mode === 'review') {
+            // Get current review letters
+            const reviewLetters = JSON.parse(localStorage.getItem('reviewLetters') || '[]');
+            
+            // Update last reviewed time
+            const learntLetters = window.Storage.getLearntLetters('read');
+            const updatedLetters = learntLetters.map(letter => {
+                if (letter.letter === readState.currentLetter.letter) {
+                    return { ...letter, lastReviewed: Date.now() };
+                }
+                return letter;
+            });
+            window.Storage.setLearntLetters(updatedLetters, 'read');
+            
+            // Remove the current letter from the review list
+            const currentLetter = reviewLetters.shift();
+            localStorage.setItem('reviewLetters', JSON.stringify(reviewLetters));
+            
+            // If no more letters to review, go back to index
+            if (reviewLetters.length === 0) {
+                localStorage.setItem('reviewLetters', '[]');
+                showFeedback('Daily Practice done!', true);
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
+                return;
+            }
+        }
+
+        // Set next letter after delay
+        setTimeout(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode');
+            
+            if (mode === 'review') {
+                const reviewLetters = JSON.parse(localStorage.getItem('reviewLetters') || '[]');
+                if (reviewLetters.length > 0) {
+                    const nextLetter = reviewLetters[0];
+                    readState.currentLetter = nextLetter;
+                    displayLetterInTarget(nextLetter);
+                    
+                    // Generate new options
+                    generateOptions(nextLetter, window.letters.vowels.concat(window.letters.consonants));
+                } else {
+                    // No more letters to review, go back to index
+                    showFeedback('Daily Practice done!', true);
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                }
+            } else {
+                setNewLetter();
+            }
+        }, 1500);
     }
 }
 

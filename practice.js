@@ -43,30 +43,41 @@ function updateLearningProgress(letter, similarity) {
 
 // Modify the checkDrawing function
 function checkDrawing() {
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const similarity = calculateSimilarity(imageData);
+    const drawingData = getDrawingData();
+    const targetData = getTargetLetterData();
     
-    let message;
-    if (similarity < 1) {
-        message = `Try again! (Debug: ${similarity}% match)`;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    } else if (similarity >= 1 && similarity < 5) {
-        message = `Almost there! (Debug: ${similarity}% match)`;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    } else {
-        message = `Success! (Debug: ${similarity}% match)`;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Update learning progress
-        updateLearningProgress(currentLetter, similarity);
-        
-        setTimeout(() => {
-            setNewLetter();
-            resultDiv.textContent = '';
-        }, 1000);
+    if (!drawingData || !targetData) {
+        console.error('Missing drawing or target data');
+        return;
     }
     
-    resultDiv.textContent = message;
+    const similarity = calculateSimilarity(drawingData, targetData);
+    console.log('Similarity score:', similarity);
+    
+    const isCorrect = similarity >= 50;  // Consider 50% similarity as correct
+    
+    // Update statistics
+    window.Storage.updateLetterStats(canvasState.currentLetter.letter, isCorrect, 'write');
+    
+    if (isCorrect) {
+        showFeedback('success', 'Great job! Your drawing matches the letter!');
+        
+        // Add to learnt letters only if not already learnt
+        if (!window.Storage.getLearntLetters('write').some(l => 
+            (typeof l === 'string' && l === canvasState.currentLetter.letter) || 
+            (typeof l === 'object' && l.letter === canvasState.currentLetter.letter)
+        )) {
+            window.Storage.addLearntLetter(canvasState.currentLetter, 'write');
+        }
+        
+        // Set new letter after delay
+        setTimeout(() => {
+            clearCanvas();
+            setNewLetter();
+        }, 1500);
+    } else {
+        showFeedback('error', 'Try again! Your drawing needs improvement.');
+    }
 }
 
 function calculateMatchPercentage() {
