@@ -350,12 +350,18 @@ function calculateSimilarity(imageData) {
     const data = imageData.data;
     const totalPixels = imageData.width * imageData.height;
     
+    // Count pixels that are drawn (not white/transparent)
     for (let i = 0; i < data.length; i += 4) {
-        // Check if pixel is drawn (not completely transparent)
-        if (data[i + 3] > 0) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const a = data[i + 3];
+        
+        // Check if pixel is not white/transparent
+        if (a > 20) {  // Allow for some transparency
             drawnPixels++;
             // Check if pixel is dark (closer to black)
-            if (data[i] < 128 && data[i + 1] < 128 && data[i + 2] < 128) {
+            if ((r + g + b) / 3 < 200) {  // More lenient threshold for dark colors
                 blackPixels++;
             }
         }
@@ -363,13 +369,13 @@ function calculateSimilarity(imageData) {
     
     // Calculate coverage and darkness ratios
     const coverageRatio = drawnPixels / totalPixels;
-    const darknessRatio = blackPixels / drawnPixels;
+    const darknessRatio = blackPixels / drawnPixels || 0;  // Avoid division by zero
     
-    // Combine the ratios with weights
-    const score = (coverageRatio * 0.4 + darknessRatio * 0.6) * 100;
+    // Adjust weights to be more lenient
+    const score = (coverageRatio * 0.3 + darknessRatio * 0.7) * 100;
     
-    // Normalize the score to be between 0 and 100
-    return Math.min(Math.max(score * 2, 0), 100);
+    // Normalize the score with a more generous curve
+    return Math.min(Math.max(score * 3, 0), 100);  // Multiply by 3 to be more lenient
 }
 
 function checkDrawing() {
@@ -384,7 +390,9 @@ function checkDrawing() {
         return;
     }
 
-    const similarity = calculateSimilarity();
+    // Get the image data from the canvas
+    const imageData = canvasState.ctx.getImageData(0, 0, canvasState.canvas.width, canvasState.canvas.height);
+    const similarity = calculateSimilarity(imageData);
     console.log('Similarity score:', similarity);
 
     // Update statistics
