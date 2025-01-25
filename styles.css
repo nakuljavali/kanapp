@@ -1401,3 +1401,96 @@ button:hover {
         grid-template-columns: 1fr;
     }
 }
+
+/* Alpha tag styles */
+.alpha-tag {
+    background: #F26B4D;
+    color: white;
+    font-size: 0.7em;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+/* News page styles */
+.news-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.news-container h1 {
+    color: #333;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.news-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.news-item {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.news-item .headline {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.news-item .kannada {
+    font-size: 1.6em;
+    color: #333;
+    margin: 12px 0;
+    line-height: 1.4;
+}
+
+.news-item .transliteration {
+    color: #666;
+    font-style: italic;
+    margin: 8px 0;
+}
+
+.news-item .translation {
+    color: #333;
+    margin-top: 8px;
+}
+
+.loading-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #666;
+    padding: 40px 0;
+}
+
+.loading-spinner .material-icons.rotating {
+    animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .news-container {
+        padding: 16px;
+    }
+    
+    .news-item {
+        padding: 16px;
+    }
+}

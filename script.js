@@ -401,17 +401,22 @@ function checkDrawing() {
         showFeedback(message, true);
         
         // Update statistics and last reviewed time
-        window.Storage.updateLetterStats(window.canvasState.currentLetter.letter, true, 'write');
+        const currentLetter = window.canvasState.currentLetter.letter;
+        window.Storage.updateLetterStats(currentLetter, true, 'write');
         
         if (mode === 'review') {
             // Get current review letters
             const reviewLetters = JSON.parse(localStorage.getItem('reviewLetters') || '[]');
             
-            // Update last reviewed time
+            // Update last reviewed time in learnt letters
             const learntLetters = window.Storage.getLearntLetters('write');
             const updatedLetters = learntLetters.map(letter => {
-                if (letter.letter === window.canvasState.currentLetter.letter) {
-                    return { ...letter, lastReviewed: Date.now() };
+                const letterToCheck = typeof letter === 'string' ? letter : letter.letter;
+                if (letterToCheck === currentLetter) {
+                    return {
+                        ...(typeof letter === 'string' ? { letter } : letter),
+                        lastReviewed: Date.now()
+                    };
                 }
                 return letter;
             });
@@ -436,9 +441,11 @@ function checkDrawing() {
                 clearCanvas();
                 const nextLetter = reviewLetters[0];
                 if (nextLetter) {
-                    const letterObj = findLetterInAllCategories(nextLetter.letter);
-                    canvasState.currentLetter = letterObj;
-                    displayLetterInTarget(letterObj);
+                    const letterObj = findLetterInAllCategories(nextLetter);
+                    if (letterObj) {
+                        canvasState.currentLetter = letterObj;
+                        displayLetterInTarget(letterObj);
+                    }
                 }
             }, 1500);
         } else {
@@ -453,6 +460,12 @@ function checkDrawing() {
             `Close match (${Math.round(similarity)}% match) - keep practicing!` :
             `Try again (${Math.round(similarity)}% match) - keep practicing!`;
         showFeedback(message, false);
+        
+        // Update statistics for incorrect attempt
+        if (mode === 'review') {
+            window.Storage.updateLetterStats(window.canvasState.currentLetter.letter, false, 'write');
+        }
+        
         setTimeout(clearCanvas, 2000);
     }
 }

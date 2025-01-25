@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Read Practice - Learn Kannada Script</title>
+    <title>News - Learn Kannada Script</title>
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
     <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -23,6 +23,7 @@
             </a>
         </div>
 
+        <!-- Side Menu -->
         <div class="side-menu" id="sideMenu">
             <div class="menu-header">
                 <a href="index.html" class="logo">
@@ -60,14 +61,14 @@
             </nav>
         </div>
 
-        <div class="practice-container">
-            <div id="targetLetter" class="letter-display"></div>
-            
-            <div class="multiple-choice-container">
-                <div class="options-grid">
-                    <!-- Options will be dynamically inserted here -->
+        <div class="news-container">
+            <h1>Today's News Headlines</h1>
+            <div class="news-grid">
+                <!-- News items will be dynamically inserted here -->
+                <div class="loading-spinner">
+                    <span class="material-icons rotating">refresh</span>
+                    Loading news...
                 </div>
-                <div id="result" class="result-message"></div>
             </div>
         </div>
     </div>
@@ -76,6 +77,6 @@
     <script src="letters.js"></script>
     <script src="storage.js"></script>
     <script src="menu.js"></script>
-    <script src="read.js"></script>
+    <script src="news.js"></script>
 </body>
-</html>
+</html> 
