@@ -167,7 +167,13 @@ window.Storage = {
                 window.letters.vowels.some(v => v.letter === letter)
             ).length;
             const vowelsProgress = Math.round((vowelsLearnt / vowelsTotal) * 100);
-
+            
+            // Store vowels progress
+            const vowelsKey = mode === 'write' ? 
+                STORAGE_KEYS.LEVEL_PROGRESS.VOWELS_WRITE : 
+                STORAGE_KEYS.LEVEL_PROGRESS.VOWELS_READ;
+            localStorage.setItem(vowelsKey, vowelsProgress);
+            
             // Calculate progress for each consonant group
             Object.entries(window.letters.consonants).forEach(([group, letters]) => {
                 const groupTotal = letters.length;
@@ -175,42 +181,48 @@ window.Storage = {
                     letters.some(c => c.letter === letter)
                 ).length;
                 const groupProgress = Math.round((groupLearnt / groupTotal) * 100);
-
+                
                 // Store progress based on mode and group
                 const progressKey = mode === 'write' ? 
                     STORAGE_KEYS.LEVEL_PROGRESS[`CONSONANTS_${group.toUpperCase()}_WRITE`] :
                     STORAGE_KEYS.LEVEL_PROGRESS[`CONSONANTS_${group.toUpperCase()}_READ`];
                 
+                if (!progressKey) {
+                    console.error(`Invalid progress key for group: ${group}, mode: ${mode}`);
+                    return;
+                }
+                
                 localStorage.setItem(progressKey, groupProgress);
                 console.log(`Progress for ${group} (${mode}):`, groupProgress);
             });
-
-            // Store vowels progress
-            const vowelsKey = mode === 'write' ? 
-                STORAGE_KEYS.LEVEL_PROGRESS.VOWELS_WRITE : 
-                STORAGE_KEYS.LEVEL_PROGRESS.VOWELS_READ;
-            localStorage.setItem(vowelsKey, vowelsProgress);
-            console.log(`Progress for vowels (${mode}):`, vowelsProgress);
         });
     },
 
     // Get progress for a specific level and mode
-    getLevelProgress: function(levelType, mode) {
-        // Handle vowels
-        if (levelType === 'vowels') {
-            const key = mode === 'read' ? 
-                STORAGE_KEYS.LEVEL_PROGRESS.VOWELS_READ : 
-                STORAGE_KEYS.LEVEL_PROGRESS.VOWELS_WRITE;
-            return parseInt(localStorage.getItem(key) || '0');
-        }
+    getLevelProgress: function(levelId, mode = 'write') {
+        if (!levelId) return 0;
         
         // Handle consonant groups
-        if (levelType.startsWith('consonants_')) {
-            const group = levelType.split('_')[1].toUpperCase();
-            const key = mode === 'read' ? 
-                STORAGE_KEYS.LEVEL_PROGRESS[`CONSONANTS_${group}_READ`] :
-                STORAGE_KEYS.LEVEL_PROGRESS[`CONSONANTS_${group}_WRITE`];
-            return parseInt(localStorage.getItem(key) || '0');
+        if (levelId.startsWith('consonants_')) {
+            const group = levelId.replace('consonants_', '');
+            const key = mode === 'write' ? 
+                STORAGE_KEYS.LEVEL_PROGRESS[`CONSONANTS_${group.toUpperCase()}_WRITE`] :
+                STORAGE_KEYS.LEVEL_PROGRESS[`CONSONANTS_${group.toUpperCase()}_READ`];
+                
+            if (!key) {
+                console.error(`Invalid progress key for level: ${levelId}, mode: ${mode}`);
+                return 0;
+            }
+            
+            return parseInt(localStorage.getItem(key) || '0', 10);
+        }
+        
+        // Handle vowels
+        if (levelId === 'vowels') {
+            const key = mode === 'write' ? 
+                STORAGE_KEYS.LEVEL_PROGRESS.VOWELS_WRITE :
+                STORAGE_KEYS.LEVEL_PROGRESS.VOWELS_READ;
+            return parseInt(localStorage.getItem(key) || '0', 10);
         }
         
         return 0;

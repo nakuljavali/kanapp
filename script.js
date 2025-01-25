@@ -82,27 +82,22 @@ function updateProgressBars() {
         const levelTypeElement = level.querySelector('.level-type');
         const mode = levelTypeElement && levelTypeElement.textContent.toLowerCase().includes('read') ? 'read' : 'write';
         
-        // Handle consonant levels properly by using the full level name
-        let progressLevel = levelType;
-        if (levelType.includes('consonants')) {
-            const consonantMatch = levelType.match(/consonants\s*-\s*(\w+)/i);
-            if (consonantMatch) {
-                const group = consonantMatch[1].toLowerCase();
-                progressLevel = `consonants_${group}`;
+        // Extract level ID from the title
+        let levelId;
+        if (levelType.includes('vowels')) {
+            levelId = 'vowels';
+        } else if (levelType.includes('consonants')) {
+            const match = levelType.match(/consonants\s*-\s*(\w+)/i);
+            if (match) {
+                const group = match[1].toLowerCase();
+                levelId = `consonants_${group}`;
             }
         }
         
-        // Get progress directly from Storage
-        const progress = window.Storage.getLevelProgress(progressLevel, mode);
-        console.log(`Progress for ${progressLevel} (${mode}):`, progress);
-
-        // Update progress bar width
-        progressBar.style.width = `${progress}%`;
-        
-        // Remove any existing progress text
-        const existingProgressText = progressBar.querySelector('.progress-text');
-        if (existingProgressText) {
-            existingProgressText.remove();
+        if (levelId) {
+            const progress = window.Storage.getLevelProgress(levelId, mode);
+            console.log(`Progress for ${levelId} (${mode}):`, progress);
+            progressBar.style.width = `${progress}%`;
         }
     });
 }
@@ -378,95 +373,82 @@ function calculateSimilarity(imageData) {
 }
 
 function checkDrawing() {
-    if (!window.canvasState.canvas || !window.canvasState.resultDiv) {
-        console.error('Canvas or result div not found');
-        return;
-    }
-
-    const drawingData = window.getDrawingData();
-    if (!drawingData) {
-        showFeedback('Please draw something first!', false);
-        return;
-    }
-
-    const similarity = window.calculateSimilarity(drawingData);
-    console.log('Similarity score:', similarity);
-
     let message;
+    let isSuccess = false;
     const urlParams = new URLSearchParams(window.location.search);
     const mode = urlParams.get('mode');
+    const level = urlParams.get('level');
+
+    if (!window.canvasState.currentLetter) {
+        console.error('No current letter set');
+        return;
+    }
+
+    const similarity = calculateSimilarity();
+    console.log('Similarity score:', similarity);
+
+    // Update statistics
+    window.Storage.updateLetterStats(window.canvasState.currentLetter.letter, similarity > 30, 'write');
 
     if (similarity > 30) {  // More lenient threshold
         message = `Great match! (${Math.round(similarity)}% match) Well done!`;
         showFeedback(message, true);
         
-        // Update statistics and last reviewed time
-        const currentLetter = window.canvasState.currentLetter.letter;
-        window.Storage.updateLetterStats(currentLetter, true, 'write');
+        // Add to learnt letters if not already learnt
+        const learntLetters = window.Storage.getLearntLetters('write');
+        const isAlreadyLearnt = learntLetters.some(l => 
+            (typeof l === 'string' && l === window.canvasState.currentLetter.letter) || 
+            (typeof l === 'object' && l.letter === window.canvasState.currentLetter.letter)
+        );
+        
+        if (!isAlreadyLearnt) {
+            window.Storage.addLearntLetter(window.canvasState.currentLetter, 'write');
+        }
+        
+        // Update progress
+        window.Storage.updateLevelProgress();
         
         if (mode === 'review') {
             // Get current review letters
             const reviewLetters = JSON.parse(localStorage.getItem('reviewLetters') || '[]');
             
-            // Update last reviewed time in learnt letters
-            const learntLetters = window.Storage.getLearntLetters('write');
-            const updatedLetters = learntLetters.map(letter => {
-                const letterToCheck = typeof letter === 'string' ? letter : letter.letter;
-                if (letterToCheck === currentLetter) {
-                    return {
-                        ...(typeof letter === 'string' ? { letter } : letter),
-                        lastReviewed: Date.now()
-                    };
-                }
-                return letter;
-            });
-            window.Storage.setLearntLetters(updatedLetters, 'write');
-            
-            // Remove the current letter from the review list
-            reviewLetters.shift();
+            // Move current letter to the end of review list
+            const currentLetter = reviewLetters.shift();
+            if (currentLetter) {
+                reviewLetters.push(currentLetter);
+            }
             localStorage.setItem('reviewLetters', JSON.stringify(reviewLetters));
             
-            // If no more letters to review, go back to index
-            if (reviewLetters.length === 0) {
-                localStorage.setItem('reviewLetters', '[]');
-                showFeedback('Daily Practice done!', true);
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 1500);
-                return;
-            }
-            
-            // Set next letter after a delay
+            // Set next letter after delay
             setTimeout(() => {
                 clearCanvas();
-                const nextLetter = reviewLetters[0];
-                if (nextLetter) {
-                    const letterObj = findLetterInAllCategories(nextLetter);
-                    if (letterObj) {
-                        canvasState.currentLetter = letterObj;
-                        displayLetterInTarget(letterObj);
+                if (reviewLetters.length > 0) {
+                    const nextLetter = findLetterInAllCategories(reviewLetters[0]);
+                    if (nextLetter) {
+                        window.canvasState.currentLetter = nextLetter;
+                        updateTargetLetter();
+                    } else {
+                        window.location.href = 'index.html';
                     }
+                } else {
+                    window.location.href = 'index.html';
                 }
             }, 1500);
         } else {
-            // Set next letter after a delay for non-review mode
+            // Set new letter after delay
             setTimeout(() => {
                 clearCanvas();
                 setNewLetter();
             }, 1500);
         }
-    } else {
-        message = similarity > 15 ? 
-            `Close match (${Math.round(similarity)}% match) - keep practicing!` :
-            `Try again (${Math.round(similarity)}% match) - keep practicing!`;
+    } else if (similarity > 15) {  // More lenient threshold
+        message = `Close match (${Math.round(similarity)}% match) - keep practicing!`;
         showFeedback(message, false);
-        
-        // Update statistics for incorrect attempt
-        if (mode === 'review') {
-            window.Storage.updateLetterStats(window.canvasState.currentLetter.letter, false, 'write');
-        }
-        
-        setTimeout(clearCanvas, 2000);
+        setTimeout(clearCanvas, 1500);
+    } else {
+        message = `Try again (${Math.round(similarity)}% match)`;
+        showFeedback(message, false);
+        setTimeout(clearCanvas, 1500);
     }
 }
 
