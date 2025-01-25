@@ -418,7 +418,7 @@ function checkDrawing() {
             window.Storage.setLearntLetters(updatedLetters, 'write');
             
             // Remove the current letter from the review list
-            const currentLetter = reviewLetters.shift();
+            reviewLetters.shift();
             localStorage.setItem('reviewLetters', JSON.stringify(reviewLetters));
             
             // If no more letters to review, go back to index
@@ -430,28 +430,24 @@ function checkDrawing() {
                 }, 1500);
                 return;
             }
-        }
-        
-        // Set next letter after a delay
-        setTimeout(() => {
-            clearCanvas();
-            if (mode === 'review') {
-                const reviewLetters = JSON.parse(localStorage.getItem('reviewLetters') || '[]');
-                if (reviewLetters.length > 0) {
-                    const nextLetter = reviewLetters[0];
-                    canvasState.currentLetter = nextLetter;
-                    displayLetterInTarget(nextLetter);
-                } else {
-                    // No more letters to review, go back to index
-                    showFeedback('Daily Practice done!', true);
-                    setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 1500);
+            
+            // Set next letter after a delay
+            setTimeout(() => {
+                clearCanvas();
+                const nextLetter = reviewLetters[0];
+                if (nextLetter) {
+                    const letterObj = findLetterInAllCategories(nextLetter.letter);
+                    canvasState.currentLetter = letterObj;
+                    displayLetterInTarget(letterObj);
                 }
-            } else {
+            }, 1500);
+        } else {
+            // Set next letter after a delay for non-review mode
+            setTimeout(() => {
+                clearCanvas();
                 setNewLetter();
-            }
-        }, 2000);
+            }, 1500);
+        }
     } else {
         message = similarity > 15 ? 
             `Close match (${Math.round(similarity)}% match) - keep practicing!` :
@@ -1508,4 +1504,109 @@ function startDailyReview() {
     } else {
         window.location.href = 'read.html?mode=review';
     }
+}
+
+function showLearnedLetters() {
+    const learntLettersWrite = window.Storage.getLearntLetters('write') || [];
+    const learntLettersRead = window.Storage.getLearntLetters('read') || [];
+    
+    // Combine and deduplicate letters
+    const allLetters = [...new Set([
+        ...learntLettersWrite.map(l => typeof l === 'string' ? l : l.letter),
+        ...learntLettersRead.map(l => typeof l === 'string' ? l : l.letter)
+    ])];
+    
+    // Get details for each letter
+    const letterDetails = allLetters.map(letter => {
+        const writeInfo = learntLettersWrite.find(l => 
+            (typeof l === 'string' && l === letter) || 
+            (typeof l === 'object' && l.letter === letter)
+        );
+        const readInfo = learntLettersRead.find(l => 
+            (typeof l === 'string' && l === letter) || 
+            (typeof l === 'object' && l.letter === letter)
+        );
+        
+        const letterObj = findLetterInAllCategories(letter);
+        
+        return {
+            letter: letterObj?.letter || letter,
+            transliteration: letterObj?.transliteration || '',
+            lastReviewedWrite: writeInfo?.lastReviewed || null,
+            lastReviewedRead: readInfo?.lastReviewed || null,
+            learnedDateWrite: writeInfo?.learnedDate || null,
+            learnedDateRead: readInfo?.learnedDate || null,
+            writeAccuracy: window.Storage.getLetterCorrectness(letter, 'write'),
+            readAccuracy: window.Storage.getLetterCorrectness(letter, 'read')
+        };
+    });
+    
+    // Sort by most recently reviewed
+    letterDetails.sort((a, b) => {
+        const lastA = Math.max(a.lastReviewedWrite || 0, a.lastReviewedRead || 0);
+        const lastB = Math.max(b.lastReviewedWrite || 0, b.lastReviewedRead || 0);
+        return lastB - lastA;
+    });
+    
+    // Create the content
+    const content = document.createElement('div');
+    content.className = 'learned-letters-overlay';
+    content.innerHTML = `
+        <div class="learned-letters-content">
+            <div class="learned-letters-header">
+                <h2>Learned Letters</h2>
+                <button class="close-overlay">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="letters-grid">
+                ${letterDetails.map(info => {
+                    const lastReviewedWrite = info.lastReviewedWrite ? 
+                        new Date(info.lastReviewedWrite).toLocaleDateString() : 'Never';
+                    const lastReviewedRead = info.lastReviewedRead ? 
+                        new Date(info.lastReviewedRead).toLocaleDateString() : 'Never';
+                    
+                    return `
+                        <div class="letter-card">
+                            <div class="letter-header">
+                                <span class="letter">${info.letter}</span>
+                                <span class="transliteration">${info.transliteration}</span>
+                            </div>
+                            <div class="letter-stats">
+                                <div class="stat-row">
+                                    <span class="material-icons">edit</span>
+                                    <div class="stat-details">
+                                        <div>Last Write: ${lastReviewedWrite}</div>
+                                        <div>Accuracy: ${info.writeAccuracy}%</div>
+                                    </div>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="material-icons">visibility</span>
+                                    <div class="stat-details">
+                                        <div>Last Read: ${lastReviewedRead}</div>
+                                        <div>Accuracy: ${info.readAccuracy}%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `;
+    
+    // Add close button handler
+    const closeButton = content.querySelector('.close-overlay');
+    closeButton.onclick = () => {
+        document.body.removeChild(content);
+    };
+    
+    // Add click outside to close
+    content.onclick = (e) => {
+        if (e.target === content) {
+            document.body.removeChild(content);
+        }
+    };
+    
+    document.body.appendChild(content);
 } 
