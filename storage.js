@@ -35,17 +35,36 @@ window.Storage = {
         const key = mode === 'read' ? STORAGE_KEYS.LEARNT_LETTERS_READ : STORAGE_KEYS.LEARNT_LETTERS;
         const learntLetters = this.getLearntLetters(mode);
         
+        // Convert string letter to object if needed
+        const letterObj = typeof letter === 'string' ? { letter } : letter;
+        
         // Check if the letter object is already in the array
-        const letterExists = learntLetters.some(l => 
-            (typeof l === 'string' && l === letter.letter) || 
-            (typeof l === 'object' && l.letter === letter.letter)
+        const existingIndex = learntLetters.findIndex(l => 
+            (typeof l === 'string' && l === letterObj.letter) || 
+            (typeof l === 'object' && l.letter === letterObj.letter)
         );
         
-        if (!letterExists) {
-            learntLetters.push(letter);
-            localStorage.setItem(key, JSON.stringify(learntLetters));
-            this.updateLevelProgress();
+        if (existingIndex === -1) {
+            // Add new letter with learned date
+            learntLetters.push({
+                ...letterObj,
+                learnedDate: Date.now(),
+                lastReviewed: Date.now()
+            });
+        } else {
+            // Update existing letter's last reviewed time
+            learntLetters[existingIndex] = {
+                ...(typeof learntLetters[existingIndex] === 'string' 
+                    ? { letter: learntLetters[existingIndex] } 
+                    : learntLetters[existingIndex]),
+                ...letterObj,
+                learnedDate: learntLetters[existingIndex].learnedDate || Date.now(),
+                lastReviewed: Date.now()
+            };
         }
+        
+        localStorage.setItem(key, JSON.stringify(learntLetters));
+        this.updateLevelProgress();
     },
 
     // Get letter statistics
@@ -58,17 +77,34 @@ window.Storage = {
         const stats = this.getLetterStats();
         if (!stats[letter]) {
             stats[letter] = {
-                read: { correct: 0, total: 0 },
-                write: { correct: 0, total: 0 }
+                read: { correct: 0, total: 0, lastReviewed: null },
+                write: { correct: 0, total: 0, lastReviewed: null }
             };
         }
         
         stats[letter][mode].total++;
         if (isCorrect) {
             stats[letter][mode].correct++;
+            stats[letter][mode].lastReviewed = Date.now();
         }
         
         localStorage.setItem(STORAGE_KEYS.LETTER_STATS, JSON.stringify(stats));
+        
+        // Also update the last reviewed time in learnt letters
+        const learntLetters = this.getLearntLetters(mode);
+        const updatedLetters = learntLetters.map(l => {
+            if ((typeof l === 'string' && l === letter) || 
+                (typeof l === 'object' && l.letter === letter)) {
+                return {
+                    ...(typeof l === 'string' ? { letter: l } : l),
+                    lastReviewed: Date.now()
+                };
+            }
+            return l;
+        });
+        
+        const key = mode === 'read' ? STORAGE_KEYS.LEARNT_LETTERS_READ : STORAGE_KEYS.LEARNT_LETTERS;
+        localStorage.setItem(key, JSON.stringify(updatedLetters));
     },
 
     // Get correctness percentage for a letter

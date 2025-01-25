@@ -1318,18 +1318,15 @@ function getReviewDueLetters() {
     const learntLettersWrite = window.Storage.getLearntLetters('write') || [];
     const learntLettersRead = window.Storage.getLearntLetters('read') || [];
     const now = Date.now();
-    const ONE_DAY = 24 * 60 * 60 * 1000;
     
-    // Helper function to check if a timestamp is within last 24 hours
-    function isWithinLast24Hours(timestamp) {
-        if (!timestamp) return false;
-        return (now - timestamp) < ONE_DAY;
-    }
-    
-    // Helper function to get days since a timestamp
-    function getDaysSince(timestamp) {
-        if (!timestamp) return Infinity;
-        return Math.floor((now - timestamp) / ONE_DAY);
+    // Helper function to check if a timestamp is from a different calendar day
+    function isFromDifferentDay(timestamp) {
+        if (!timestamp) return true;
+        const date1 = new Date(timestamp);
+        const date2 = new Date(now);
+        return date1.getDate() !== date2.getDate() ||
+               date1.getMonth() !== date2.getMonth() ||
+               date1.getFullYear() !== date2.getFullYear();
     }
     
     // Combine learnt letters from both modes
@@ -1371,23 +1368,28 @@ function getReviewDueLetters() {
             // Calculate average accuracy
             const avgAccuracy = (writeAccuracy + readAccuracy) / 2;
             
+            // Find letter details
+            const letterObj = findLetterInAllCategories(letter);
+            
             return {
-                letter,
+                letter: letterObj?.letter || letter,
+                transliteration: letterObj?.transliteration || '',
                 lastReviewed,
                 learnedDate,
                 writeStats,
                 readStats,
-                avgAccuracy,
-                daysSinceReview: getDaysSince(lastReviewed),
-                daysSinceLearned: getDaysSince(learnedDate)
+                avgAccuracy
             };
         })
         .filter(letterInfo => {
-            // Exclude letters learned within last 24 hours
-            if (isWithinLast24Hours(letterInfo.learnedDate)) return false;
+            // Only include letters that have been learned
+            if (!letterInfo.learnedDate) return false;
             
-            // Exclude letters reviewed within last 24 hours
-            if (isWithinLast24Hours(letterInfo.lastReviewed)) return false;
+            // Exclude letters learned today
+            if (!isFromDifferentDay(letterInfo.learnedDate)) return false;
+            
+            // Exclude letters reviewed today
+            if (!isFromDifferentDay(letterInfo.lastReviewed)) return false;
             
             return true;
         })
@@ -1397,13 +1399,8 @@ function getReviewDueLetters() {
                 return a.avgAccuracy - b.avgAccuracy;
             }
             
-            // Then by days since last review (descending - older reviews first)
-            if (a.daysSinceReview !== b.daysSinceReview) {
-                return b.daysSinceReview - a.daysSinceReview;
-            }
-            
-            // Finally by days since learned (descending - older learned first)
-            return b.daysSinceLearned - a.daysSinceLearned;
+            // Then by last reviewed time (ascending - oldest first)
+            return (a.lastReviewed || 0) - (b.lastReviewed || 0);
         })
         .slice(0, 20); // Get up to 20 letters for review
         
