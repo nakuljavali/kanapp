@@ -36,12 +36,6 @@ function init() {
 }
 
 function setNewLetter() {
-    // Clear any existing result message
-    const resultMessage = document.querySelector('.result-message');
-    if (resultMessage) {
-        resultMessage.remove();
-    }
-
     // Get level from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const level = urlParams.get('level') || 'vowels';
@@ -192,16 +186,8 @@ function checkAnswer() {
         return;
     }
 
-    const resultContainer = document.querySelector('.result-message');
-    if (resultContainer) {
-        resultContainer.remove();
-    }
-
     const isCorrect = selectedOption.value === readState.currentLetter.transliteration;
-    const message = document.createElement('div');
-    message.className = `result-message ${isCorrect ? 'success' : 'error'}`;
-    message.textContent = isCorrect ? 'Correct! Well done!' : 'Try again!';
-    document.querySelector('.multiple-choice-container').appendChild(message);
+    showFeedback(isCorrect ? 'Correct!' : 'Try again!', isCorrect);
 
     // Update statistics
     window.Storage.updateLetterStats(readState.currentLetter.letter, isCorrect, 'read');

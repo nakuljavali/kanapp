@@ -1156,40 +1156,40 @@ button:hover {
 .options-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-    margin: 20px 0;
-    width: 100%;
-    max-width: 600px;
+    gap: 20px;
+    margin: 20px auto;
+    max-width: 800px;
+    padding: 0 20px;
 }
 
-.option-box {
+.option-button {
     background: white;
+    border: 2px solid #F26B4D;
     border-radius: 12px;
-    padding: 24px;
+    padding: 20px;
     text-align: center;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     transition: transform 0.2s, box-shadow 0.2s;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 140px;
-}
-
-.option-box .letter {
-    font-size: 2.5em;
-    margin-bottom: 8px;
-}
-
-.option-box .transliteration {
-    font-size: 1.2em;
-    color: #666;
+    min-height: 120px;
 }
 
 .option-button:hover {
-    background: #FFF1EC;
     transform: translateY(-2px);
+    background: #FFF1EC;
+}
+
+.option-button .letter {
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+.option-button .transliteration {
+    font-size: 14px;
+    color: #666;
 }
 
 .option-button.correct {
@@ -1204,9 +1204,43 @@ button:hover {
     color: #721c24;
 }
 
-.option-button .transliteration {
-    font-size: 14px;
-    color: #666;
+/* Mobile styles */
+@media (max-width: 768px) {
+    .options-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        padding: 0 15px;
+    }
+    
+    .option-button {
+        min-height: 100px;
+        padding: 15px;
+    }
+    
+    .option-button .letter {
+        font-size: 1.8em;
+    }
+    
+    .option-button .transliteration {
+        font-size: 0.9em;
+    }
+}
+
+/* Small mobile styles */
+@media (max-width: 360px) {
+    .options-grid {
+        gap: 10px;
+        padding: 0 10px;
+    }
+    
+    .option-button {
+        min-height: 90px;
+        padding: 12px;
+    }
+    
+    .option-button .letter {
+        font-size: 1.6em;
+    }
 }
 
 .result-message {
@@ -1227,29 +1261,6 @@ button:hover {
     background: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
-}
-
-/* Mobile adjustments */
-@media (max-width: 768px) {
-    .options-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-        padding: 0 12px;
-        margin: 12px 0;
-    }
-    
-    .option-box {
-        min-height: 120px;
-        padding: 20px;
-    }
-    
-    .option-box .letter {
-        font-size: 2.2em;
-    }
-    
-    .option-box .transliteration {
-        font-size: 1.1em;
-    }
 }
 
 .review-complete {
