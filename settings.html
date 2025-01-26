@@ -1,76 +1,207 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings - Learn Kannada Script</title>
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-    <link rel="icon" type="image/png" href="assets/favicon.png">
-    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-    
-    <!-- Existing links -->
-    <link rel="stylesheet" href="styles.css">
+    <title>Settings - Kannada Learning App</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .settings-container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            font-size: 16px;
+            color: #333;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+        
+        .back-button .material-icons {
+            margin-right: 8px;
+            font-size: 20px;
+        }
+        
+        .settings-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .settings-section h2 {
+            margin-top: 0;
+            margin-bottom: 16px;
+            color: #333;
+            font-size: 1.2em;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        
+        .stat-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 1em;
+            color: #666;
+        }
+        
+        .stat-value {
+            font-size: 1.5em;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .danger-zone {
+            border: 1px solid #dc3545;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .danger-zone h2 {
+            color: #dc3545;
+        }
+        
+        .clear-button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+        
+        .clear-button:hover {
+            background: #c82333;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="top-bar">
-            <button class="icon-button" onclick="window.location.href='index.html'">
-                <span class="material-icons">arrow_back</span>
-            </button>
-            <h1>Settings</h1>
-        </div>
-
-        <div class="settings-container">
-            <div class="settings-section">
-                <h2>Learning Progress</h2>
-                <div class="setting-item">
-                    <div class="setting-info">
-                        <h3>Clear All Progress</h3>
-                        <p>This will reset all your learning progress</p>
-                    </div>
-                    <button class="danger-button" onclick="clearProgress()">Clear Progress</button>
+    <div class="settings-container">
+        <a href="index.html" class="back-button">
+            <span class="material-icons">arrow_back</span>
+            Back
+        </a>
+        
+        <div class="settings-section">
+            <h2>Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Letters Learned</h3>
+                    <div class="stat-value" id="totalLetters">0</div>
                 </div>
-                <div class="setting-info progress-stats">
-                    <p>Vowels learned: <span id="vowelsCount">0/13</span></p>
-                    <p>Consonants learned: <span id="consonantsCount">0/34</span></p>
-                    <p>Numbers learned: <span id="numbersCount">0/10</span></p>
+                <div class="stat-card">
+                    <h3>Write Mode Progress</h3>
+                    <div class="stat-value" id="writeProgress">0%</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Read Mode Progress</h3>
+                    <div class="stat-value" id="readProgress">0%</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Average Accuracy</h3>
+                    <div class="stat-value" id="avgAccuracy">0%</div>
                 </div>
             </div>
         </div>
+        
+        <div class="settings-section danger-zone">
+            <h2>Danger Zone</h2>
+            <p>This action cannot be undone. This will permanently delete all your progress.</p>
+            <button id="clearProgress" class="clear-button">Clear All Progress</button>
+        </div>
     </div>
-
+    
     <script src="letters.js"></script>
+    <script src="storage.js"></script>
     <script>
-        // Update progress statistics
-        function updateProgressStats() {
-            const learntLetters = JSON.parse(localStorage.getItem('learntLetters') || '[]');
-            const vowels = kannadaLetters.vowels.map(v => v.letter);
-            const consonants = kannadaLetters.consonants.map(c => c.letter);
-            const numbers = kannadaLetters.numbers.map(n => n.letter);
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStats();
             
-            const vowelsLearned = learntLetters.filter(l => vowels.includes(l)).length;
-            const consonantsLearned = learntLetters.filter(l => consonants.includes(l)).length;
-            const numbersLearned = learntLetters.filter(l => numbers.includes(l)).length;
+            document.getElementById('clearProgress').addEventListener('click', () => {
+                if (confirm('Are you sure you want to clear all progress? This cannot be undone.')) {
+                    window.Storage.clearAllData();
+                    updateStats();
+                }
+            });
+        });
+        
+        function updateStats() {
+            const learntLettersWrite = window.Storage.getLearntLetters('write');
+            const learntLettersRead = window.Storage.getLearntLetters('read');
             
-            document.getElementById('vowelsCount').textContent = `${vowelsLearned}/${vowels.length}`;
-            document.getElementById('consonantsCount').textContent = `${consonantsLearned}/${consonants.length}`;
-            document.getElementById('numbersCount').textContent = `${numbersLearned}/${numbers.length}`;
+            // Calculate total unique letters learned
+            const allLetters = new Set([
+                ...learntLettersWrite.map(l => typeof l === 'string' ? l : l.letter),
+                ...learntLettersRead.map(l => typeof l === 'string' ? l : l.letter)
+            ]);
+            
+            // Calculate average accuracy
+            let totalAccuracy = 0;
+            let letterCount = 0;
+            allLetters.forEach(letter => {
+                const writeAcc = window.Storage.getLetterCorrectness(letter, 'write');
+                const readAcc = window.Storage.getLetterCorrectness(letter, 'read');
+                if (writeAcc > 0) {
+                    totalAccuracy += writeAcc;
+                    letterCount++;
+                }
+                if (readAcc > 0) {
+                    totalAccuracy += readAcc;
+                    letterCount++;
+                }
+            });
+            
+            const avgAccuracy = letterCount > 0 ? Math.round(totalAccuracy / letterCount) : 0;
+            
+            // Calculate overall progress
+            const writeProgress = calculateOverallProgress('write');
+            const readProgress = calculateOverallProgress('read');
+            
+            // Update the display
+            document.getElementById('totalLetters').textContent = allLetters.size;
+            document.getElementById('writeProgress').textContent = `${writeProgress}%`;
+            document.getElementById('readProgress').textContent = `${readProgress}%`;
+            document.getElementById('avgAccuracy').textContent = `${avgAccuracy}%`;
         }
-
-        function clearProgress() {
-            if (confirm('Are you sure you want to clear all progress? This cannot be undone.')) {
-                localStorage.removeItem('learntLetters');
-                localStorage.removeItem('lastPracticeDates');
-                localStorage.removeItem('currentLevel');
-                updateProgressStats();
-            }
+        
+        function calculateOverallProgress(mode) {
+            let totalProgress = 0;
+            let totalLevels = 0;
+            
+            // Calculate vowels progress
+            const vowelsProgress = window.Storage.getLevelProgress('vowels', mode);
+            totalProgress += vowelsProgress;
+            totalLevels++;
+            
+            // Calculate consonants progress for each group
+            const consonantGroups = ['velar', 'palatal', 'retroflex', 'dental', 'labial', 'other'];
+            consonantGroups.forEach(group => {
+                const progress = window.Storage.getLevelProgress(`consonants_${group}`, mode);
+                totalProgress += progress;
+                totalLevels++;
+            });
+            
+            return Math.round(totalProgress / totalLevels);
         }
-
-        // Initialize stats
-        updateProgressStats();
     </script>
 </body>
 </html> 
