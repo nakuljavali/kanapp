@@ -97,7 +97,7 @@ function updateProgressBars() {
         if (levelId) {
             const progress = window.Storage.getLevelProgress(levelId, mode);
             console.log(`Progress for ${levelId} (${mode}):`, progress);
-            progressBar.style.width = `${progress}%`;
+        progressBar.style.width = `${progress}%`;
         }
     });
 }
@@ -517,7 +517,7 @@ function displayLetterInTarget(letterObj) {
         });
         return;
     }
-    
+
     console.log('Displaying letter:', letterObj);
     
     // Ensure all required fields exist
@@ -583,7 +583,7 @@ function initializeFilters() {
             
             if (mode === 'all' || levelMode.includes(mode.toLowerCase())) {
                 level.style.display = '';
-            } else {
+    } else {
                 level.style.display = 'none';
             }
         });
@@ -657,25 +657,34 @@ function updateStageState(stage) {
     const progress = calculateStageProgress(stageNumber);
     
     // Update progress bar and text
-    progressBar.style.width = `${progress}%`;
-    progressText.textContent = `${progress}% Complete`;
+    if (progressBar) progressBar.style.width = `${progress}%`;
+    if (progressText) progressText.textContent = `${progress}% Complete`;
     
     // Handle stage accessibility
     if (stageNumber === 1) {
         // Stage 1 is always accessible
         stage.classList.remove('locked');
-        toggleBtn.disabled = false;
-        content.classList.add('expanded');
+        if (toggleBtn) toggleBtn.disabled = false;
+        if (content) content.classList.add('expanded');
+        
+        // Add completed class if progress is 100%
+        if (progress === 100) {
+            stage.classList.add('completed');
+        } else {
+            stage.classList.remove('completed');
+        }
     } else {
         // Check if previous stage is completed
         const prevStageProgress = calculateStageProgress(stageNumber - 1);
         const isLocked = prevStageProgress < 100;
         
         stage.classList.toggle('locked', isLocked);
-        toggleBtn.disabled = isLocked;
+        if (toggleBtn) toggleBtn.disabled = isLocked;
         
         if (!isLocked && progress === 100) {
             stage.classList.add('completed');
+        } else {
+            stage.classList.remove('completed');
         }
     }
 }
@@ -684,14 +693,21 @@ function calculateStageProgress(stageNumber) {
     const levels = document.querySelectorAll(`.stage[data-stage="${stageNumber}"] .level`);
     if (!levels.length) return 0;
     
-    let completedLevels = 0;
+    let totalProgress = 0;
     levels.forEach(level => {
         const progressBar = level.querySelector('.progress');
-        const progress = parseInt(progressBar.style.width) || 0;
-        if (progress === 100) completedLevels++;
+        if (progressBar) {
+            // Extract the percentage value and convert it to a number
+            const progressValue = parseInt(progressBar.style.width) || 0;
+            totalProgress += progressValue;
+        }
     });
     
-    return Math.round((completedLevels / levels.length) * 100);
+    // Calculate average progress across all levels
+    const averageProgress = Math.round(totalProgress / levels.length);
+    
+    // If the average is very close to 100 (like 99.x%), round it up to 100
+    return averageProgress >= 99 ? 100 : averageProgress;
 }
 
 // Update the init function to include stage initialization
