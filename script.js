@@ -1343,6 +1343,13 @@ function getReviewDueLetters() {
                date1.getMonth() !== date2.getMonth() ||
                date1.getFullYear() !== date2.getFullYear();
     }
+
+    // Helper function to calculate days since a timestamp
+    function getDaysSince(timestamp) {
+        if (!timestamp) return null;
+        const diff = now - timestamp;
+        return Math.floor(diff / (1000 * 60 * 60 * 24));
+    }
     
     // Combine learnt letters from both modes
     const allLearntLetters = [...new Set([
@@ -1363,16 +1370,20 @@ function getReviewDueLetters() {
             );
             
             // Get the most recent review/learn time
-            const lastReviewed = Math.max(
-                writeStats?.lastReviewed || 0,
-                readStats?.lastReviewed || 0
-            );
+            const lastReviewedWrite = writeStats?.lastReviewed || writeStats?.learnedDate;
+            const lastReviewedRead = readStats?.lastReviewed || readStats?.learnedDate;
+            
+            // Get the oldest review date between read and write modes
+            const lastReviewed = lastReviewedWrite && lastReviewedRead ?
+                Math.min(lastReviewedWrite, lastReviewedRead) :
+                lastReviewedWrite || lastReviewedRead;
             
             // Get when the letter was first learned
-            const learnedDate = Math.min(
-                writeStats?.learnedDate || Infinity,
-                readStats?.learnedDate || Infinity
-            );
+            const learnedDateWrite = writeStats?.learnedDate;
+            const learnedDateRead = readStats?.learnedDate;
+            const learnedDate = learnedDateWrite && learnedDateRead ?
+                Math.min(learnedDateWrite, learnedDateRead) :
+                learnedDateWrite || learnedDateRead;
             
             // Calculate accuracies
             const writeAccuracy = writeStats ? 
@@ -1393,18 +1404,19 @@ function getReviewDueLetters() {
                 learnedDate,
                 writeStats,
                 readStats,
-                avgAccuracy
+                avgAccuracy,
+                daysSinceReview: getDaysSince(lastReviewed)
             };
         })
         .filter(letterInfo => {
-            // Only include letters that have been learned
+            // Only include letters that have a valid learned date
             if (!letterInfo.learnedDate) return false;
             
             // Exclude letters learned today
             if (!isFromDifferentDay(letterInfo.learnedDate)) return false;
             
             // Exclude letters reviewed today
-            if (!isFromDifferentDay(letterInfo.lastReviewed)) return false;
+            if (letterInfo.lastReviewed && !isFromDifferentDay(letterInfo.lastReviewed)) return false;
             
             return true;
         })
@@ -1431,7 +1443,6 @@ function updateDailyReview() {
     console.log('Letters due for review:', dueLetters);
     
     if (dueLetters.length === 0) {
-        // Show completion message instead of hiding
         reviewSection.classList.add('empty');
         reviewSection.innerHTML = `
             <h2>Daily Review</h2>
@@ -1451,7 +1462,6 @@ function updateDailyReview() {
     
     // Create cards for each letter
     reviewCards.innerHTML = dueLetters.map(letterInfo => {
-        // Get letter details from letters.js
         const letterObj = findLetterInAllCategories(letterInfo.letter);
         if (!letterObj) return ''; // Skip if letter not found
         
@@ -1461,8 +1471,10 @@ function updateDailyReview() {
             window.Storage.getLetterCorrectness(letterInfo.letter, 'read') : 0;
         
         // Format the last reviewed text
-        const daysAgo = Math.floor(letterInfo.daysSinceReview);
-        const lastReviewedText = `Last reviewed ${daysAgo} days ago`;
+        let lastReviewedText = '';
+        if (letterInfo.daysSinceReview !== null) {
+            lastReviewedText = `Last reviewed ${letterInfo.daysSinceReview} days ago`;
+        }
         
         return `
             <div class="review-card" data-letter="${letterInfo.letter}">
@@ -1472,7 +1484,7 @@ function updateDailyReview() {
                     <div class="accuracy write">Write: ${writeAccuracy}%</div>
                     <div class="accuracy read">Read: ${readAccuracy}%</div>
                 </div>
-                <div class="last-reviewed">${lastReviewedText}</div>
+                ${lastReviewedText ? `<div class="last-reviewed">${lastReviewedText}</div>` : ''}
             </div>
         `;
     }).join('');
