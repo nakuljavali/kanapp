@@ -380,10 +380,8 @@ function calculateSimilarity(imageData) {
 
 function checkDrawing() {
     let message;
-    let isSuccess = false;
     const urlParams = new URLSearchParams(window.location.search);
     const mode = urlParams.get('mode');
-    const level = urlParams.get('level');
 
     if (!window.canvasState.currentLetter) {
         console.error('No current letter set');
@@ -402,48 +400,39 @@ function checkDrawing() {
         message = `Great match! (${Math.round(similarity)}% match) Well done!`;
         showFeedback(message, true);
         
-        // Add to learnt letters if not already learnt
-        const learntLetters = window.Storage.getLearntLetters('write');
-        const isAlreadyLearnt = learntLetters.some(l => 
-            (typeof l === 'string' && l === window.canvasState.currentLetter.letter) || 
-            (typeof l === 'object' && l.letter === window.canvasState.currentLetter.letter)
-        );
-        
-        if (!isAlreadyLearnt) {
-            window.Storage.addLearntLetter(window.canvasState.currentLetter, 'write');
-        }
-        
-        // Update progress
-        window.Storage.updateLevelProgress();
-        
         if (mode === 'review') {
             // Get current review letters
             const reviewLetters = JSON.parse(localStorage.getItem('reviewLetters') || '[]');
             
-            // Move current letter to the end of review list
-            const currentLetter = reviewLetters.shift();
-            if (currentLetter) {
-                reviewLetters.push(currentLetter);
-            }
+            // Remove the current letter from the front
+            reviewLetters.shift();
+            
+            // Update the review letters in localStorage
             localStorage.setItem('reviewLetters', JSON.stringify(reviewLetters));
             
             // Set next letter after delay
             setTimeout(() => {
                 clearCanvas();
                 if (reviewLetters.length > 0) {
-                    const nextLetter = findLetterInAllCategories(reviewLetters[0]);
-                    if (nextLetter) {
-                        window.canvasState.currentLetter = nextLetter;
-                        updateTargetLetter();
-                    } else {
-                        window.location.href = 'index.html';
+                    const nextLetter = reviewLetters[0];
+                    // Redirect to appropriate page based on next letter's mode
+                    if (nextLetter.mode !== 'write') {
+                        window.location.href = 'read.html?mode=review';
+                        return;
                     }
+                    // Update current letter for write mode
+                    window.canvasState.currentLetter = nextLetter;
+                    displayLetterInTarget(nextLetter);
                 } else {
-                    window.location.href = 'index.html';
+                    // No more letters to review
+                    showFeedback('Daily Review complete!', true);
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
                 }
             }, 1500);
         } else {
-            // Set new letter after delay
+            // Set new letter after delay for practice mode
             setTimeout(() => {
                 clearCanvas();
                 setNewLetter();
@@ -710,7 +699,7 @@ function calculateStageProgress(stageNumber) {
     return averageProgress >= 99 ? 100 : averageProgress;
 }
 
-// Update the init function to include stage initialization
+// Update the init function to use DailyPractice
 function init() {
     console.log('Initializing...');
     console.log('window.letters available:', !!window.letters);
@@ -736,7 +725,9 @@ function init() {
         updateProgressBars();
         initializeFilters();
         initializeStages();
-        updateDailyReview(); // Add this line to initialize daily review
+        if (window.DailyPractice) {
+            window.DailyPractice.updateDailyReview();
+        }
     }
     
     if (window.location.pathname.includes('practice.html')) {
@@ -758,10 +749,6 @@ function init() {
                 const currentLetter = reviewLetters[0];
                 canvasState.currentLetter = currentLetter;
                 displayLetterInTarget(currentLetter);
-                
-                // Remove the current letter from the review list
-                reviewLetters.shift();
-                localStorage.setItem('reviewLetters', JSON.stringify(reviewLetters));
             } else {
                 // No more letters to review, go back to index
                 window.location.href = 'index.html';
@@ -785,17 +772,6 @@ function init() {
             }
         } else {
             setNewLetter();
-        }
-    }
-
-    // Initialize daily review if we're on the index page
-    if (document.querySelector('.daily-review')) {
-        updateDailyReview();
-        
-        // Add click handler for start review button
-        const startButton = document.getElementById('startReview');
-        if (startButton) {
-            startButton.onclick = startDailyReview;
         }
     }
 }
@@ -1328,214 +1304,6 @@ function getDrawingData() {
 window.getDrawingData = getDrawingData; 
 
 // Add these functions after the existing code
-
-function getReviewDueLetters() {
-    const learntLettersWrite = window.Storage.getLearntLetters('write') || [];
-    const learntLettersRead = window.Storage.getLearntLetters('read') || [];
-    const now = Date.now();
-    
-    // Helper function to check if a timestamp is from a different calendar day
-    function isFromDifferentDay(timestamp) {
-        if (!timestamp) return true;
-        const date1 = new Date(timestamp);
-        const date2 = new Date(now);
-        return date1.getDate() !== date2.getDate() ||
-               date1.getMonth() !== date2.getMonth() ||
-               date1.getFullYear() !== date2.getFullYear();
-    }
-
-    // Helper function to calculate days since a timestamp
-    function getDaysSince(timestamp) {
-        if (!timestamp) return null;
-        const diff = now - timestamp;
-        return Math.floor(diff / (1000 * 60 * 60 * 24));
-    }
-    
-    // Combine learnt letters from both modes
-    const allLearntLetters = [...new Set([
-        ...learntLettersWrite.map(l => typeof l === 'string' ? l : l.letter),
-        ...learntLettersRead.map(l => typeof l === 'string' ? l : l.letter)
-    ])];
-    
-    // Get letters that need review
-    const dueLetters = allLearntLetters
-        .map(letter => {
-            const writeStats = learntLettersWrite.find(l => 
-                (typeof l === 'string' && l === letter) || 
-                (typeof l === 'object' && l.letter === letter)
-            );
-            const readStats = learntLettersRead.find(l => 
-                (typeof l === 'string' && l === letter) || 
-                (typeof l === 'object' && l.letter === letter)
-            );
-            
-            // Get the most recent review/learn time
-            const lastReviewedWrite = writeStats?.lastReviewed || writeStats?.learnedDate;
-            const lastReviewedRead = readStats?.lastReviewed || readStats?.learnedDate;
-            
-            // Get the oldest review date between read and write modes
-            const lastReviewed = lastReviewedWrite && lastReviewedRead ?
-                Math.min(lastReviewedWrite, lastReviewedRead) :
-                lastReviewedWrite || lastReviewedRead;
-            
-            // Get when the letter was first learned
-            const learnedDateWrite = writeStats?.learnedDate;
-            const learnedDateRead = readStats?.learnedDate;
-            const learnedDate = learnedDateWrite && learnedDateRead ?
-                Math.min(learnedDateWrite, learnedDateRead) :
-                learnedDateWrite || learnedDateRead;
-            
-            // Calculate accuracies
-            const writeAccuracy = writeStats ? 
-                window.Storage.getLetterCorrectness(letter, 'write') : 0;
-            const readAccuracy = readStats ? 
-                window.Storage.getLetterCorrectness(letter, 'read') : 0;
-            
-            // Calculate average accuracy
-            const avgAccuracy = (writeAccuracy + readAccuracy) / 2;
-            
-            // Find letter details
-            const letterObj = findLetterInAllCategories(letter);
-            
-            return {
-                letter: letterObj?.letter || letter,
-                transliteration: letterObj?.transliteration || '',
-                lastReviewed,
-                learnedDate,
-                writeStats,
-                readStats,
-                avgAccuracy,
-                daysSinceReview: getDaysSince(lastReviewed)
-            };
-        })
-        .filter(letterInfo => {
-            // Only include letters that have a valid learned date
-            if (!letterInfo.learnedDate) return false;
-            
-            // Exclude letters learned today
-            if (!isFromDifferentDay(letterInfo.learnedDate)) return false;
-            
-            // Exclude letters reviewed today
-            if (letterInfo.lastReviewed && !isFromDifferentDay(letterInfo.lastReviewed)) return false;
-            
-            return true;
-        })
-        .sort((a, b) => {
-            // First, sort by accuracy (ascending - less accurate first)
-            if (a.avgAccuracy !== b.avgAccuracy) {
-                return a.avgAccuracy - b.avgAccuracy;
-            }
-            
-            // Then by last reviewed time (ascending - oldest first)
-            return (a.lastReviewed || 0) - (b.lastReviewed || 0);
-        })
-        .slice(0, 20); // Get up to 20 letters for review
-        
-    return dueLetters;
-}
-
-function updateDailyReview() {
-    const reviewSection = document.querySelector('.daily-review');
-    const reviewCards = document.querySelector('.review-cards');
-    if (!reviewCards || !reviewSection) return;
-    
-    const dueLetters = getReviewDueLetters();
-    console.log('Letters due for review:', dueLetters);
-    
-    if (dueLetters.length === 0) {
-        reviewSection.classList.add('empty');
-        reviewSection.innerHTML = `
-            <h2>Daily Review</h2>
-            <div class="review-cards">
-                <div class="review-complete">
-                    <span class="material-icons">check_circle</span>
-                    <p>Daily Review Done! Come back tomorrow</p>
-                </div>
-            </div>
-        `;
-        return;
-    }
-    
-    // Show the section and remove empty class
-    reviewSection.style.display = '';
-    reviewSection.classList.remove('empty');
-    
-    // Create cards for each letter
-    reviewCards.innerHTML = dueLetters.map(letterInfo => {
-        const letterObj = findLetterInAllCategories(letterInfo.letter);
-        if (!letterObj) return ''; // Skip if letter not found
-        
-        const writeAccuracy = letterInfo.writeStats ? 
-            window.Storage.getLetterCorrectness(letterInfo.letter, 'write') : 0;
-        const readAccuracy = letterInfo.readStats ? 
-            window.Storage.getLetterCorrectness(letterInfo.letter, 'read') : 0;
-        
-        // Format the last reviewed text
-        let lastReviewedText = '';
-        if (letterInfo.daysSinceReview !== null) {
-            lastReviewedText = `Last reviewed ${letterInfo.daysSinceReview} days ago`;
-        }
-        
-        return `
-            <div class="review-card" data-letter="${letterInfo.letter}">
-                <div class="letter">${letterObj.letter}</div>
-                <div class="transliteration">${letterObj.transliteration || ''}</div>
-                <div class="stats">
-                    <div class="accuracy write">Write: ${writeAccuracy}%</div>
-                    <div class="accuracy read">Read: ${readAccuracy}%</div>
-                </div>
-                ${lastReviewedText ? `<div class="last-reviewed">${lastReviewedText}</div>` : ''}
-            </div>
-        `;
-    }).join('');
-    
-    // Enable the start review button
-    const startButton = document.getElementById('startReview');
-    if (startButton) {
-        startButton.removeAttribute('disabled');
-        startButton.onclick = startDailyReview;
-    }
-}
-
-function startDailyReview() {
-    const dueLetters = getReviewDueLetters();
-    if (dueLetters.length === 0) return;
-    
-    // For each letter, determine if it needs more practice in read or write mode
-    const reviewLetters = dueLetters.map(letterInfo => {
-        const writeAccuracy = letterInfo.writeStats ? 
-            window.Storage.getLetterCorrectness(letterInfo.letter, 'write') : 0;
-        const readAccuracy = letterInfo.readStats ? 
-            window.Storage.getLetterCorrectness(letterInfo.letter, 'read') : 0;
-        
-        // Get letter details
-        const letterObj = findLetterInAllCategories(letterInfo.letter);
-        if (!letterObj) return null;
-        
-        // If write accuracy is lower, or if both are equal but write was practiced longer ago
-        const needsWritePractice = writeAccuracy < readAccuracy || 
-            (writeAccuracy === readAccuracy && 
-             (!letterInfo.writeStats || 
-              (letterInfo.writeStats.lastReviewed || 0) < (letterInfo.readStats?.lastReviewed || 0)));
-        
-        return {
-            ...letterObj,
-            mode: needsWritePractice ? 'write' : 'read',
-            lastReviewed: letterInfo.lastReviewed
-        };
-    }).filter(Boolean);
-    
-    // Store the letters to review in localStorage
-    localStorage.setItem('reviewLetters', JSON.stringify(reviewLetters));
-    
-    // Redirect to practice page in review mode
-    const firstLetter = reviewLetters[0];
-    if (firstLetter.mode === 'write') {
-        window.location.href = 'practice.html?mode=review';
-    } else {
-        window.location.href = 'read.html?mode=review';
-    }
-}
 
 function showLearnedLetters() {
     const learntLettersWrite = window.Storage.getLearntLetters('write') || [];

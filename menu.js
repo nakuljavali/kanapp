@@ -13,64 +13,53 @@ document.addEventListener('DOMContentLoaded', () => {
         menuOverlay: !!menuOverlay
     });
 
-    function openMenu(e) {
+    function openMenu() {
         console.log('Opening menu');
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        
-        requestAnimationFrame(() => {
-            sideMenu.classList.add('active');
-            menuOverlay.classList.add('active');
-            menuOverlay.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-        });
+        sideMenu.classList.add('open');
+        menuOverlay.classList.add('visible');
+        document.body.style.overflow = 'hidden';
     }
 
-    function handleCloseMenu(e) {
+    function closeMenu() {
         console.log('Closing menu');
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        
-        requestAnimationFrame(() => {
-            sideMenu.classList.remove('active');
-            menuOverlay.classList.remove('active');
-            menuOverlay.style.display = 'none';
-            document.body.style.overflow = '';
-        });
+        sideMenu.classList.remove('open');
+        menuOverlay.classList.remove('visible');
+        document.body.style.overflow = '';
     }
 
     if (menuButton) {
         menuButton.addEventListener('click', openMenu);
-        menuButton.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            openMenu(e);
-        }, { passive: false });
     }
 
     if (closeMenuButton) {
-        closeMenuButton.addEventListener('click', handleCloseMenu);
-        closeMenuButton.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            handleCloseMenu(e);
-        }, { passive: false });
+        closeMenuButton.addEventListener('click', closeMenu);
     }
 
     if (menuOverlay) {
-        menuOverlay.addEventListener('click', handleCloseMenu);
-        menuOverlay.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            handleCloseMenu(e);
-        }, { passive: false });
+        menuOverlay.addEventListener('click', closeMenu);
+    }
+
+    // Add touch swipe to close menu
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    if (sideMenu) {
+        sideMenu.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, false);
+
+        sideMenu.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            if (touchStartX > touchEndX + 50) { // Swipe left
+                closeMenu();
+            }
+        }, false);
     }
 
     // ESC key to close menu
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            handleCloseMenu();
+            closeMenu();
         }
     });
 }); 
