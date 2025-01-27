@@ -204,17 +204,19 @@ window.Storage = {
         
         // Handle consonant groups
         if (levelId.startsWith('consonants_')) {
-            const group = levelId.replace('consonants_', '');
+            const group = levelId.replace('consonants_', '').toUpperCase();
             const key = mode === 'write' ? 
-                STORAGE_KEYS.LEVEL_PROGRESS[`CONSONANTS_${group.toUpperCase()}_WRITE`] :
-                STORAGE_KEYS.LEVEL_PROGRESS[`CONSONANTS_${group.toUpperCase()}_READ`];
+                STORAGE_KEYS.LEVEL_PROGRESS[`CONSONANTS_${group}_WRITE`] :
+                STORAGE_KEYS.LEVEL_PROGRESS[`CONSONANTS_${group}_READ`];
                 
             if (!key) {
                 console.error(`Invalid progress key for level: ${levelId}, mode: ${mode}`);
                 return 0;
             }
             
-            return parseInt(localStorage.getItem(key) || '0', 10);
+            const progress = parseInt(localStorage.getItem(key) || '0', 10);
+            console.log(`Retrieved progress for ${levelId} (${mode}):`, progress);
+            return progress;
         }
         
         // Handle vowels
@@ -226,6 +228,86 @@ window.Storage = {
         }
         
         return 0;
+    },
+
+    // Update progress for a specific level
+    updateLevelProgress: function(levelId, mode, learntLetters) {
+        if (!levelId || !mode || !learntLetters) {
+            console.error('Missing required parameters for updateLevelProgress:', { levelId, mode });
+            return;
+        }
+
+        console.log('Updating progress for:', { levelId, mode });
+
+        // Get letters for this level
+        const letters = this.getLevelLetters(levelId);
+        if (!letters || letters.length === 0) {
+            console.error('No letters found for level:', levelId);
+            return;
+        }
+
+        // Convert learntLetters to array of letter symbols
+        const learntLetterSymbols = learntLetters.map(l => 
+            typeof l === 'string' ? l : l.letter
+        );
+
+        // Count how many letters from this level have been learned
+        const learntCount = letters.filter(letter => 
+            learntLetterSymbols.includes(letter.letter)
+        ).length;
+
+        // Calculate progress percentage
+        const progress = Math.round((learntCount / letters.length) * 100);
+        console.log('Progress calculation:', {
+            total: letters.length,
+            learned: learntCount,
+            progress: progress
+        });
+
+        // Determine the storage key based on level type
+        let key;
+        if (levelId === 'vowels') {
+            key = mode === 'write' ? 
+                STORAGE_KEYS.LEVEL_PROGRESS.VOWELS_WRITE :
+                STORAGE_KEYS.LEVEL_PROGRESS.VOWELS_READ;
+        } else if (levelId.startsWith('consonants_')) {
+            const group = levelId.replace('consonants_', '').toUpperCase();
+            key = mode === 'write' ? 
+                STORAGE_KEYS.LEVEL_PROGRESS[`CONSONANTS_${group}_WRITE`] :
+                STORAGE_KEYS.LEVEL_PROGRESS[`CONSONANTS_${group}_READ`];
+        }
+
+        if (key) {
+            localStorage.setItem(key, progress.toString());
+            console.log(`Updated progress for ${levelId} (${mode}):`, progress);
+        } else {
+            console.error('No valid storage key found for:', { levelId, mode });
+        }
+    },
+
+    // Get letters for a specific level
+    getLevelLetters: function(levelId) {
+        if (!window.letters) {
+            console.error('window.letters not available');
+            return [];
+        }
+
+        if (levelId === 'vowels') {
+            return window.letters.vowels;
+        }
+
+        if (levelId.startsWith('consonants_')) {
+            const group = levelId.replace('consonants_', '');
+            const letters = window.letters.consonants[group];
+            if (!letters) {
+                console.error('No letters found for consonant group:', group);
+                return [];
+            }
+            return letters;
+        }
+
+        console.error('Invalid level ID:', levelId);
+        return [];
     },
 
     // Clear all stored data

@@ -72,32 +72,43 @@ function updateProgressBars() {
             return;
         }
 
+        // Get level ID from the level element or data attribute
+        let levelId;
         const levelHeader = level.querySelector('h2');
         if (!levelHeader) {
             console.error(`No header found for level ${index + 1}`);
             return;
         }
 
-        const levelType = levelHeader.textContent.toLowerCase();
+        const levelTitle = levelHeader.textContent;
         const levelTypeElement = level.querySelector('.level-type');
         const mode = levelTypeElement && levelTypeElement.textContent.toLowerCase().includes('read') ? 'read' : 'write';
-        
+
         // Extract level ID from the title
-        let levelId;
-        if (levelType.includes('vowels')) {
+        if (levelTitle.toLowerCase().includes('vowels')) {
             levelId = 'vowels';
-        } else if (levelType.includes('consonants')) {
-            const match = levelType.match(/consonants\s*-\s*(\w+)/i);
+        } else if (levelTitle.toLowerCase().includes('consonants')) {
+            // Extract the consonant group (e.g., "palatal" from "Consonants - Palatal (ಚ ವರ್ಗ)")
+            const match = levelTitle.match(/consonants\s*-\s*(\w+)/i);
             if (match) {
                 const group = match[1].toLowerCase();
                 levelId = `consonants_${group}`;
+                console.log(`Found consonant group: ${group}, levelId: ${levelId}`);
             }
         }
-        
+
         if (levelId) {
             const progress = window.Storage.getLevelProgress(levelId, mode);
             console.log(`Progress for ${levelId} (${mode}):`, progress);
-        progressBar.style.width = `${progress}%`;
+            progressBar.style.width = `${progress}%`;
+
+            // Update progress text if it exists
+            const progressText = level.querySelector('.progress-text');
+            if (progressText) {
+                progressText.textContent = `${progress}% Complete`;
+            }
+        } else {
+            console.error(`Could not determine level ID for level ${index + 1}`);
         }
     });
 }
@@ -382,6 +393,7 @@ function checkDrawing() {
     let message;
     const urlParams = new URLSearchParams(window.location.search);
     const mode = urlParams.get('mode');
+    const level = urlParams.get('level');
 
     if (!window.canvasState.currentLetter) {
         console.error('No current letter set');
@@ -393,10 +405,25 @@ function checkDrawing() {
     const similarity = calculateSimilarity(imageData);
     console.log('Similarity score:', similarity);
 
-    // Update statistics
-    window.Storage.updateLetterStats(window.canvasState.currentLetter.letter, similarity > 30, 'write');
+    // Update statistics and progress
+    const currentLetter = window.canvasState.currentLetter;
+    const isCorrect = similarity > 30;
+    window.Storage.updateLetterStats(currentLetter.letter, isCorrect, 'write');
 
-    if (similarity > 30) {  // More lenient threshold
+    if (isCorrect) {
+        // Add to learnt letters if not already learned
+        window.Storage.addLearntLetter(currentLetter, 'write');
+        
+        // Get all learnt letters for this mode
+        const learntLetters = window.Storage.getLearntLetters('write');
+        
+        // Update progress for the current level
+        if (level) {
+            window.Storage.updateLevelProgress(level, 'write', learntLetters);
+            // Force progress bars to update
+            updateProgressBars();
+        }
+
         message = `Great match! (${Math.round(similarity)}% match) Well done!`;
         showFeedback(message, true);
         
@@ -438,7 +465,7 @@ function checkDrawing() {
                 setNewLetter();
             }, 1500);
         }
-    } else if (similarity > 15) {  // More lenient threshold
+    } else if (similarity > 15) {
         message = `Close match (${Math.round(similarity)}% match) - keep practicing!`;
         showFeedback(message, false);
         setTimeout(clearCanvas, 1500);
