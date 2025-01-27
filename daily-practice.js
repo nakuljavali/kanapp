@@ -26,8 +26,6 @@ window.DailyPractice = {
         if (!reviewSection) return;
 
         const dueLetters = this.getReviewDueLetters();
-        const reviewCards = document.querySelector('.review-cards');
-        const startReviewButton = document.getElementById('startReview');
 
         if (dueLetters.length === 0) {
             reviewSection.classList.add('empty');
@@ -42,6 +40,17 @@ window.DailyPractice = {
             `;
             return;
         }
+
+        // If there are letters to review, show the review cards and button
+        reviewSection.classList.remove('empty');
+        reviewSection.innerHTML = `
+            <h2>Daily Review</h2>
+            <div class="review-cards"></div>
+            <button id="startReview" class="primary-button">Start Review</button>
+        `;
+
+        const reviewCards = document.querySelector('.review-cards');
+        const startReviewButton = document.getElementById('startReview');
 
         reviewCards.innerHTML = dueLetters.map(letter => {
             const writeStats = window.Storage.getLetterStats(letter.letter, 'write');
@@ -65,7 +74,8 @@ window.DailyPractice = {
             `;
         }).join('');
 
-        startReviewButton.disabled = false;
+        // Add click handler to start review button
+        startReviewButton.onclick = () => this.startDailyReview();
     },
 
     startDailyReview() {
